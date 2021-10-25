@@ -9,6 +9,7 @@ OPT_HIGHLIGHT_BACK_COLOR = 0xFFAA00
 OPT_TEXT_COLOR = 0xFFAA00
 OPT_BACK_COLOR = 0x0000FF
 OPT_PADDING = 24
+PX_PER_LINE = 16
 
 class MenuOption:
     text = ''
@@ -34,10 +35,35 @@ class Menu:
     """
     _selection = 0
 
+    """
+    List of menu items
+    """
     _options = []
 
-    def __init__(self, display: Display, show_menu_title = True):
+    """
+    Title for this menu
+    """
+    _title = 'Menu'
+
+    """
+    Whether to show Title at the top of the menu
+    """
+    _show_title = True
+
+    """
+    X-coordinate for rendering menu
+    """
+    _x = 16
+
+    """
+    Y-coordinate for rendering menu
+    """
+    _y = 0
+
+    def __init__(self, display: Display, show_menu_title = True, title = 'Menu'):
         self._display = display
+        self._title = title
+        #print('Screen dimensions:', self._display.width, 'x', self._display.height)
 
     def add_action_button(self, title: str):
         act = ActionButton(title)
@@ -57,53 +83,45 @@ class Menu:
         self._options.append(val)
         return val
 
-    def get_options_as_group(self):
-        for opt in self._options:
-            # calculate position
-            pass
+    def build_options_as_group(self):
+        self._y = 0
+        grp = Group()
+        if self._show_title:
+            lbl = self.get_title_label()
+            grp.append(lbl)
+        
+        for i in range(len(self._options)):
+            opt = self._options[i]
+            lbl = label.Label(terminalio.FONT)
+            lbl.text = opt.text
+
+            if self._selection == i:
+                lbl.color = OPT_HIGHLIGHT_TEXT_COLOR
+                lbl.background_color = OPT_HIGHLIGHT_BACK_COLOR
+            else:
+                lbl.color = OPT_TEXT_COLOR
+                lbl.background_color = OPT_BACK_COLOR
+
+            lbl.x = self._x
+            lbl.y = self._y
+            grp.append(lbl)
+
+            self._y = self._y + PX_PER_LINE
+        
+        return grp
+
+
+    def get_title_label(self):
+        lbl = label.Label(terminalio.FONT, text=self._title, color=OPT_HIGHLIGHT_TEXT_COLOR, back_color=OPT_HIGHLIGHT_BACK_COLOR)
+        lbl.x = self._x
+        lbl.y = self._y
+
+        self._y = self._y + PX_PER_LINE
+        return lbl
     
 
     def show_menu(self):
-        menu_label = label.Label(terminalio.FONT, text='   MENU', color=OPT_HIGHLIGHT_TEXT_COLOR, background_color=OPT_HIGHLIGHT_BACK_COLOR)
-        menu_label.x = 0
-        menu_label.y = 10
-
-        pages_color = OPT_TEXT_COLOR
-        pages_back_color = OPT_BACK_COLOR
-        if (self._selection == 0):
-            pages_color = OPT_HIGHLIGHT_TEXT_COLOR
-            pages_back_color = OPT_HIGHLIGHT_BACK_COLOR
-
-        pages_label = label.Label(terminalio.FONT, text='Pages...', color=pages_color, background_color=pages_back_color, padding_left=OPT_PADDING)
-        pages_label.x = 16
-        pages_label.y = 24
-
-        bright_color = OPT_TEXT_COLOR
-        bright_back_color = OPT_BACK_COLOR
-        if (self._selection == 1):
-            bright_color = OPT_HIGHLIGHT_TEXT_COLOR
-            bright_back_color = OPT_HIGHLIGHT_BACK_COLOR
-        
-        brightness_label = label.Label(terminalio.FONT, text='Brightness...', color=bright_color, background_color=bright_back_color, padding_left=OPT_PADDING)
-        brightness_label.x = 16
-        brightness_label.y = 40
-
-        navback_color = OPT_TEXT_COLOR
-        navback_back_color = OPT_BACK_COLOR
-        if (self._selection == 2):
-            navback_color = OPT_HIGHLIGHT_TEXT_COLOR
-            navback_back_color = OPT_HIGHLIGHT_BACK_COLOR
-        
-        navback_label = label.Label(terminalio.FONT, text='<- Back', color=navback_color, background_color=navback_back_color, padding_left=OPT_PADDING)
-        navback_label.x = 16
-        navback_label.y = 56
-
-        grp = Group()
-        grp.append(menu_label)
-        grp.append(pages_label)
-        grp.append(brightness_label)
-        grp.append(navback_label)
-
+        grp = self.build_options_as_group()
         self._display.display.show(grp)
         self._is_active = True
         return
@@ -129,13 +147,17 @@ class Menu:
 
     def scroll(self, delta: int):
         if delta > 0:
-            if self._selection == OPTIONS - 1:
+            # Loop to first item if scrolling down while on last item
+            if self._selection == len(self._options) - 1:
                 self._selection = 0
+            # Else just scroll down
             else:
                 self._selection = self._selection + 1
         if delta < 0:
+            # Loop to last item if scrolling up while on first item
             if self._selection == 0:
-                self._selection = OPTIONS - 1
+                self._selection = len(self._options) - 1
+            # Else just scroll up
             else:
                 self._selection = self._selection - 1
         print('Scrolled to', self._selection, 'using delta', delta)

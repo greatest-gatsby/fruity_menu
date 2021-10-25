@@ -27,12 +27,6 @@ class MenuOptionTests(unittest.TestCase):
         opt = MenuOption('My title')
         self.assertEqual(opt.text, 'My title')
 
-class MenuBuildingTests(unittest.TestCase):
-    menu = None
-
-    def setUp(self):
-        self.menu = Menu(SH1106)
-
     def test_addActionButton(self):
         act = self.menu.add_action_button('Perform this')
         self.assertEqual(act.text, 'Perform this', 'Button text does not match string given to method')
@@ -47,3 +41,18 @@ class MenuBuildingTests(unittest.TestCase):
         val = self.menu.add_value_button('More arg txt')
         self.assertEqual(val.text, 'More arg txt')
         self.assertIn(val, self.menu._options, 'Button was returned but not added to its parent menu')
+
+class MenuBuildingTests(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_buildGroup(self):
+        menu = Menu(SH1106)
+        act = menu.add_action_button('New action')
+        sub = menu.add_submenu_button('Expand...')
+        val = menu.add_value_button('Volume')
+        grp = menu.build_options_as_group()
+        self.assertEqual(4, len(grp))
+        self.assertIn(act, menu._options)
+        self.assertIn(sub, menu._options)
+        self.assertIn(val, menu._options)
