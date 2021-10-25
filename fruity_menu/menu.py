@@ -124,7 +124,7 @@ class Menu:
 
     def show_menu(self):
         grp = self.build_options_as_group()
-        self._display.display.show(grp)
+        self._display.show(grp)
         self._is_active = True
         return
 
