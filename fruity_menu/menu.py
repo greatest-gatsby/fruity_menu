@@ -10,6 +10,7 @@ OPT_TEXT_COLOR = 0xFFAA00
 OPT_BACK_COLOR = 0x0000FF
 OPT_PADDING = 24
 PX_PER_LINE = 16
+INITIAL_Y = 8
 
 class MenuOption:
     text = ''
@@ -43,7 +44,7 @@ class Menu:
     """
     Title for this menu
     """
-    _title = 'Menu'
+    _title: str = 'Menu'
 
     """
     Whether to show Title at the top of the menu
@@ -53,16 +54,17 @@ class Menu:
     """
     X-coordinate for rendering menu
     """
-    _x = 16
+    _x = 4
 
     """
     Y-coordinate for rendering menu
     """
-    _y = 0
+    _y = INITIAL_Y
 
-    def __init__(self, display: Display, show_menu_title = True, title = 'Menu'):
+    def __init__(self, display: Display, show_menu_title = True, title: str = 'Menu'):
         self._display = display
         self._title = title
+        self._show_title = show_menu_title
         #print('Screen dimensions:', self._display.width, 'x', self._display.height)
 
     def add_action_button(self, title: str):
@@ -84,7 +86,7 @@ class Menu:
         return val
 
     def build_options_as_group(self):
-        self._y = 0
+        self._y = INITIAL_Y
         grp = Group()
         if self._show_title:
             lbl = self.get_title_label()
@@ -112,8 +114,8 @@ class Menu:
 
 
     def get_title_label(self):
-        lbl = label.Label(terminalio.FONT, text=self._title, color=OPT_HIGHLIGHT_TEXT_COLOR, back_color=OPT_HIGHLIGHT_BACK_COLOR)
-        lbl.x = self._x
+        lbl = label.Label(terminalio.FONT, text='    ' + self._title, color=OPT_HIGHLIGHT_TEXT_COLOR, background_color=OPT_HIGHLIGHT_BACK_COLOR)
+        lbl.x = 0
         lbl.y = self._y
 
         self._y = self._y + PX_PER_LINE
