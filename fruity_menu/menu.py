@@ -20,6 +20,9 @@ class MenuOption:
     def __init__(self, title: str):
         self.text = title
 
+    def click(self):
+        print('Click:',self.text)
+
 class Menu:
     """
     Boolean which tells whether the menu is currently Opened
@@ -67,8 +70,8 @@ class Menu:
         self._show_title = show_menu_title
         #print('Screen dimensions:', self._display.width, 'x', self._display.height)
 
-    def add_action_button(self, title: str):
-        act = ActionButton(title)
+    def add_action_button(self, title: str, action):
+        act = ActionButton(title, action)
         act.upmenu = self
         self._options.append(act)
         return act
@@ -128,21 +131,21 @@ class Menu:
         self._is_active = True
         return
 
+    def click_selected(self):
+        selected = self._options[self._selection]
+        return selected.click()
 
     def show_main(self):
         #self._lines = self._display.display_text(title='Macpad')
         #self._lines.show()
         self._is_active = False
+        print('MAINAINAINAINAINAIN')
         pass
 
     def toggle_menu(self):
         if (self._is_active):
-            if (self._selection == 2):
-                self.show_main()
-                return False
-            else:
-                # execute the currently active option
-                return True
+            self.show_main()
+            return False
         else:
             self.show_menu()
             return True
@@ -167,7 +170,17 @@ class Menu:
 
 
 class ActionButton(MenuOption):
-    action = None
+    _action = None
+
+    def __init__(self, text: str, action):
+        super().__init__(text)
+        self._action = action
+
+    def click(self):
+        super().click()
+        print('Child click')
+        return self._action()
+        
 
 class SubmenuButton(MenuOption):
     submenu: Menu = None
