@@ -13,6 +13,9 @@ PX_PER_LINE = 16
 INITIAL_Y = 8
 
 class MenuOption:
+    """
+    Building block of all options a menu can display.
+    """
     text = ''
     submenu = None
     upmenu = None
@@ -25,6 +28,13 @@ class MenuOption:
         return True
 
 class Menu:
+    """
+    The main class for building a menu. This is what most library users should be instatiating.
+
+    Add submenus and menu options using instance methods.
+
+    Render the menu by passing the resulting `displayio.Group` to the display of your choosing.
+    """
     
     _is_active = False
     """
@@ -67,30 +77,36 @@ class Menu:
     """
 
     def __init__(self, display: Display, show_menu_title = True, title: str = 'Menu'):
+        """
+        Create a Menu for the given display.
+        """
         self._display = display
         self._title = title
         self._show_title = show_menu_title
-        #print('Screen dimensions:', self._display.width, 'x', self._display.height)
 
     def add_action_button(self, title: str, action):
+        """Add a button to this menu that invokes the given function when clicked."""
         act = ActionButton(title, action)
         act.upmenu = self
         self._options.append(act)
         return act
 
     def add_submenu_button(self, title: str):
+        """Add a button to this menu that opens the given submenu when clicked."""
         sub = SubmenuButton(title)
         sub.upmenu = self
         self._options.append(sub)
         return sub
 
     def add_value_button(self, title: str):
+        """Add a button to this menu that lets users modify the value of the given variable"""
         val = ValueButton(title)
         val.upmenu = self
         self._options.append(val)
         return val
 
     def build_options_as_group(self):
+        """Builds a `displayio.Group` of this menu and all its options and current selection."""
         self._y = INITIAL_Y
         grp = Group()
         if self._show_title:
@@ -119,6 +135,7 @@ class Menu:
 
 
     def get_title_label(self):
+        """Gets the Label for this menu's title and adjusts the builder's coordinates to compensate for the object"""
         lbl = label.Label(terminalio.FONT, text='    ' + self._title, color=OPT_HIGHLIGHT_TEXT_COLOR, background_color=OPT_HIGHLIGHT_BACK_COLOR)
         lbl.x = 0
         lbl.y = self._y
@@ -128,16 +145,19 @@ class Menu:
     
 
     def show_menu(self):
+        """Builds the option group and renders it to the display"""
         grp = self.build_options_as_group()
         self._display.show(grp)
         self._is_active = True
         return
 
     def click_selected(self):
+        """Clicks the currently selected item and returns whether this menu is still open (True) or closed (False)"""
         selected = self._options[self._selection]
         return selected.click()
 
     def scroll(self, delta: int):
+        """Update menu's selected position using the given delta and allowing circular scrolling. The menu is not graphically updated."""
         if delta > 0:
             # Loop to first item if scrolling down while on last item
             if self._selection == len(self._options) - 1:
@@ -157,13 +177,19 @@ class Menu:
 
 
 class ActionButton(MenuOption):
+    """
+    ActionButtons are used to invoke Python functions when the user clicks the button.
+    For example, hooking the action to your menu's toggle function can work as an Exit button.
+    """
     _action = None
 
     def __init__(self, text: str, action):
+        """Creates an action button with the given title and that will execute the given action when clicked"""
         super().__init__(text)
         self._action = action
 
     def click(self):
+        """Invoke this button's stored action"""
         super().click()
         print('Child click')
         return self._action()
