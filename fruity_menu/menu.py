@@ -22,47 +22,49 @@ class MenuOption:
 
     def click(self):
         print('Click:',self.text)
+        return True
 
 class Menu:
+    
+    _is_active = False
     """
     Boolean which tells whether the menu is currently Opened
     """
-    _is_active = False
-
+    
+    _display: Display = None
     """
     The Display object instatiated from your driver/main. Used to access the display and controls.
     """
-    _display: Display = None
-
+    
+    _selection = 0
     """
     The 0-based index of the currently selected item
     """
-    _selection = 0
 
+    _options = []
     """
     List of menu items
     """
-    _options = []
-
+    
+    _title: str = 'Menu'
     """
     Title for this menu
     """
-    _title: str = 'Menu'
-
+   
+    _show_title = True
     """
     Whether to show Title at the top of the menu
     """
-    _show_title = True
 
+    _x = 4
     """
     X-coordinate for rendering menu
     """
-    _x = 4
 
+    _y = INITIAL_Y
     """
     Y-coordinate for rendering menu
     """
-    _y = INITIAL_Y
 
     def __init__(self, display: Display, show_menu_title = True, title: str = 'Menu'):
         self._display = display
@@ -134,21 +136,6 @@ class Menu:
     def click_selected(self):
         selected = self._options[self._selection]
         return selected.click()
-
-    def show_main(self):
-        #self._lines = self._display.display_text(title='Macpad')
-        #self._lines.show()
-        self._is_active = False
-        print('MAINAINAINAINAINAIN')
-        pass
-
-    def toggle_menu(self):
-        if (self._is_active):
-            self.show_main()
-            return False
-        else:
-            self.show_menu()
-            return True
 
     def scroll(self, delta: int):
         if delta > 0:
