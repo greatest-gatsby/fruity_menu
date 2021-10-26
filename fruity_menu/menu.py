@@ -83,6 +83,7 @@ class Menu:
         self._display = display
         self._title = title
         self._show_title = show_menu_title
+        self._options = []
 
     def add_action_button(self, title: str, action):
         """Add a button to this menu that invokes the given function when clicked."""
@@ -91,12 +92,18 @@ class Menu:
         self._options.append(act)
         return act
 
-    def add_submenu_button(self, title: str):
-        """Add a button to this menu that opens the given submenu when clicked."""
-        sub = SubmenuButton(title)
-        sub.upmenu = self
-        self._options.append(sub)
-        return sub
+    def add_submenu_button(self, title: str, sub, add_upmenu_btn = '<- Back'):
+        """
+        Add a button to this menu that opens the given submenu when clicked.
+
+        If a string is provided for `add_upmenu_btn`, the submenu will get an exit button
+        which navigates up a level to this parent menu. The string will be used as the button's label.
+        """
+        menubut = SubmenuButton(title, sub)
+        #menubut.upmenu = self
+        #menubut.submenu = sub
+        self._options.append(menubut)
+        return menubut
 
     def add_value_button(self, title: str):
         """Add a button to this menu that lets users modify the value of the given variable"""
@@ -172,7 +179,7 @@ class Menu:
             # Else just scroll up
             else:
                 self._selection = self._selection - 1
-        print('Scrolled to', self._selection, 'using delta', delta)
+        #print('Scrolled to', self._selection, 'using delta', delta)
         return self._selection
 
 
@@ -185,19 +192,22 @@ class ActionButton(MenuOption):
 
     def __init__(self, text: str, action):
         """Creates an action button with the given title and that will execute the given action when clicked"""
-        super().__init__(text)
         self._action = action
+
+        super().__init__(text)
 
     def click(self):
         """Invoke this button's stored action"""
         super().click()
-        print('Child click')
         return self._action()
         
 
 class SubmenuButton(MenuOption):
     submenu: Menu = None
-    pass
+
+    def __init__(self, title: str, sub: Menu):
+        self.submenu = sub
+        super().__init__(title)
 
 class ValueButton(MenuOption):
     target = None
