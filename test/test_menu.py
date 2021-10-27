@@ -5,7 +5,18 @@ from adafruit_displayio_sh1106 import SH1106
 
 DISPLAY = SH1106
 def TRAP_ACTION():
-        raise AssertionError('You should not have executed me!')
+    raise AssertionError('You should not have executed me!')
+
+def PRINT_ACTION(arg1 = None, arg2 = None, arg3 = None, arg4 = None):
+    print('you asked for it')
+    if (arg1 is not None):
+        print('\t',arg1)
+    if (arg2 is not None):
+        print('\t',arg2)
+    if (arg3 is not None):
+        print('\t',arg3)
+    if (arg4 is not None):
+        print('\t',arg4)
 
 class MenuTests(unittest.TestCase):
     def test_constructor_requiresDisplay(self):
@@ -32,7 +43,7 @@ class MenuOptionTests(unittest.TestCase):
 
     def test_submenu_constructor_setsFields(self):
         btn_title = 'The subtitler'
-        sub = SubmenuButton(btn_title, self.menu)
+        sub = SubmenuButton(btn_title, self.menu, PRINT_ACTION)
         self.assertEqual(btn_title, sub.text, 'Specified title not assigned to button')
         self.assertEqual(self.menu, sub.submenu, 'Specified menu not assigned to button')
 
@@ -65,12 +76,12 @@ class MenuOptionTests(unittest.TestCase):
         self.assertEqual(val.text, 'More arg txt', 'Given title not assigned to button')
         self.assertIn(val, self.menu._options, 'Button was returned but not added to its parent menu')
 
-    def test_addSubmenus_useDiscreteOptionsLists(self):
+    def test_addSubmenu_useDiscreteOptionsLists(self):
         alt_sub = Menu(DISPLAY)
         self.menu.add_submenu_button('Alt menu', alt_sub)
         self.assertNotEqual(alt_sub._options, self.menu._options, 'Distinct child submenu references the same _options object as its parent')
 
-    def test_addSubmenus_siblingsUseDiscreteOptionsLists(self):
+    def test_addSubmenu_siblingsUseDiscreteOptionsLists(self):
         alt_sub = Menu(DISPLAY)
         self.menu.add_submenu_button('Alt menu', alt_sub)
         alt_sub.add_submenu_button('Going deeper', Menu(DISPLAY))
@@ -80,7 +91,7 @@ class MenuOptionTests(unittest.TestCase):
 
         self.assertNotEqual(alt_sub._options, dif_sub._options, 'Distinct submenu siblings reference the same _options object')
 
-    def test_addSubmenus_addsExitButton(self):
+    def test_addSubmenu_addsExitButton(self):
         btn_text = 'GO UP'
         submenu = Menu(DISPLAY)
         og_len = len(submenu._options)

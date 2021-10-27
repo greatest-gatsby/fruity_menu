@@ -103,7 +103,7 @@ class Menu:
         If a string is provided for `add_upmenu_btn`, the submenu will get an exit button
         which navigates up a level to this parent menu. The string will be used as the button's label.
         """
-        menubut = SubmenuButton(title, sub)
+        menubut = SubmenuButton(title, sub, self._submenu_is_opening)
         if (add_upmenu_btn != '' and add_upmenu_btn != None):
             sub.add_action_button(add_upmenu_btn, self._submenu_is_closing)
 
@@ -172,11 +172,22 @@ class Menu:
 
     def click_selected(self):
         """Clicks the currently selected item and returns whether this menu is still open (True) or closed (False)"""
+        # Exec submenu if open
+        if (self._activated_submenu != None):
+            return self._activated_submenu.click_selected()
+        
+        # otherwise click this menu
         selected = self._options[self._selection]
         return selected.click()
+            
 
     def scroll(self, delta: int):
         """Update menu's selected position using the given delta and allowing circular scrolling. The menu is not graphically updated."""
+        # Exec submenu if open
+        if (self._activated_submenu != None):
+            return self._activated_submenu.scroll(delta)
+        
+        # Else, scroll this menu
         if delta > 0:
             # Loop to first item if scrolling down while on last item
             if self._selection == len(self._options) - 1:
@@ -197,6 +208,10 @@ class Menu:
     def _submenu_is_closing(self):
         self._activated_submenu = None
         self.show_menu()
+
+    def _submenu_is_opening(self, activated_menu):
+        self._activated_submenu = activated_menu
+
 
 
 class ActionButton(MenuOption):
@@ -219,10 +234,18 @@ class ActionButton(MenuOption):
 
 class SubmenuButton(MenuOption):
     submenu: Menu = None
+    _notify_parent = None
 
-    def __init__(self, title: str, sub: Menu):
+    def __init__(self, title: str, sub: Menu, on_open):
         self.submenu = sub
+        self._notify_parent = on_open
         super().__init__(title)
+
+    def click(self):
+        super().click()
+        print('Opening submenu...')
+        self._notify_parent(self.submenu)
+        self.submenu.show_menu()
 
 class ValueButton(MenuOption):
     target = None
