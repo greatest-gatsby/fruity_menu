@@ -9,7 +9,7 @@ OPT_HIGHLIGHT_BACK_COLOR = 0xFFAA00
 OPT_TEXT_COLOR = 0xFFAA00
 OPT_BACK_COLOR = 0x0000FF
 OPT_PADDING = 24
-PX_PER_LINE = 15
+PX_PER_LINE = 14
 INITIAL_Y = 8
 
 class MenuOption:
@@ -106,9 +106,6 @@ class Menu:
         menubut = SubmenuButton(title, sub, self._submenu_is_opening)
         if (add_upmenu_btn != '' and add_upmenu_btn != None):
             sub.add_action_button(add_upmenu_btn, self._submenu_is_closing)
-
-        #menubut.upmenu = self
-        #menubut.submenu = sub
         self._options.append(menubut)
         return menubut
 
