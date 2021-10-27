@@ -17,7 +17,6 @@ class MenuOption:
     Building block of all options a menu can display.
     """
     text = ''
-    submenu = None
     upmenu = None
 
     def __init__(self, title: str):
@@ -54,6 +53,11 @@ class Menu:
     _options = []
     """
     List of menu items
+    """
+
+    _activated_submenu = None
+    """
+    The currently opened submenu, if any
     """
     
     _title: str = 'Menu'
@@ -100,14 +104,17 @@ class Menu:
         which navigates up a level to this parent menu. The string will be used as the button's label.
         """
         menubut = SubmenuButton(title, sub)
+        if (add_upmenu_btn != '' and add_upmenu_btn != None):
+            sub.add_action_button(add_upmenu_btn, self._submenu_is_closing)
+
         #menubut.upmenu = self
         #menubut.submenu = sub
         self._options.append(menubut)
         return menubut
 
-    def add_value_button(self, title: str):
+    def add_value_button(self, title: str, value):
         """Add a button to this menu that lets users modify the value of the given variable"""
-        val = ValueButton(title)
+        val = ValueButton(title, value)
         val.upmenu = self
         self._options.append(val)
         return val
@@ -153,10 +160,15 @@ class Menu:
 
     def show_menu(self):
         """Builds the option group and renders it to the display"""
-        grp = self.build_options_as_group()
-        self._display.show(grp)
-        self._is_active = True
-        return
+        # if no submenu is open, then show this menu
+        if self._activated_submenu is None:
+            grp = self.build_options_as_group()
+            self._display.show(grp)
+            self._is_active = True
+            return
+        else:
+            # if submenu active, then render that submenu
+            return self._activated_submenu.show_menu()
 
     def click_selected(self):
         """Clicks the currently selected item and returns whether this menu is still open (True) or closed (False)"""
@@ -181,6 +193,10 @@ class Menu:
                 self._selection = self._selection - 1
         #print('Scrolled to', self._selection, 'using delta', delta)
         return self._selection
+    
+    def _submenu_is_closing(self):
+        self._activated_submenu = None
+        self.show_menu()
 
 
 class ActionButton(MenuOption):
@@ -193,7 +209,6 @@ class ActionButton(MenuOption):
     def __init__(self, text: str, action):
         """Creates an action button with the given title and that will execute the given action when clicked"""
         self._action = action
-
         super().__init__(text)
 
     def click(self):
@@ -211,4 +226,7 @@ class SubmenuButton(MenuOption):
 
 class ValueButton(MenuOption):
     target = None
-    pass
+
+    def __init__(self, title: str, value):
+        self.target = value
+        super().__init__(title)

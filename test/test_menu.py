@@ -3,80 +3,116 @@ import unittest
 from fruity_menu.menu import Menu, ActionButton, SubmenuButton, ValueButton, MenuOption
 from adafruit_displayio_sh1106 import SH1106
 
+DISPLAY = SH1106
+def TRAP_ACTION():
+        raise AssertionError('You should not have executed me!')
+
 class MenuTests(unittest.TestCase):
     def test_constructor_requiresDisplay(self):
-        disp = SH1106
-        menu = Menu(disp)
+        menu = Menu(DISPLAY)
 
 class MenuOptionTests(unittest.TestCase):
     menu = None
-    disp = None
-
-    def trap_action():
-        raise AssertionError('You should not have executed me!')
 
     def setUp(self):
-        self.disp = SH1106
-        self.menu = Menu(self.disp)
+        self.menu = Menu(DISPLAY)
 
-    def test_action_constructor(self):
-        act = ActionButton(self.menu, MenuOptionTests.trap_action)
+    def test_menu_constructor_setsFields(self):
+        menu_title = 'This is a title'
+        menu_show_title = False
+        menu = Menu(DISPLAY, show_menu_title=menu_show_title, title=menu_title)
+        self.assertEqual(menu_show_title, menu._show_title)
+        self.assertEqual(menu_title, menu._title)
 
-    def test_submenu_constructor(self):
-        sub = SubmenuButton('subtitle', self.menu)
+    def test_action_constructor_setsFields(self):
+        btn_title = 'My title'
+        act = ActionButton(btn_title, TRAP_ACTION)
+        self.assertEqual(btn_title, act.text, 'Specified button title not set')
+        self.assertEqual(TRAP_ACTION, act._action, 'Specified button action not set')
+
+    def test_submenu_constructor_setsFields(self):
+        btn_title = 'The subtitler'
+        sub = SubmenuButton(btn_title, self.menu)
+        self.assertEqual(btn_title, sub.text, 'Specified title not assigned to button')
+        self.assertEqual(self.menu, sub.submenu, 'Specified menu not assigned to button')
 
     def test_value_constructor(self):
-        val = ValueButton(self.menu)
+        btn_title = 'valyo'
+        btn_val = 890
+        val_btn = ValueButton(btn_title, btn_val)
+        self.assertEqual(btn_title, val_btn.text, 'Given title not assigned to button')
+        self.assertEqual(btn_val, val_btn.target, 'Given value not assigned to button')
 
-    def test_menuOption_constructorSetsTitle(self):
+
+    def test_menuOption_constructor_setsFields(self):
         opt = MenuOption('My title')
         self.assertEqual(opt.text, 'My title')
 
-    def test_addActionButton(self):
-        act = self.menu.add_action_button('Perform this', action=MenuOptionTests.trap_action)
+    def test_addActionButton_setsFields(self):
+        act = self.menu.add_action_button('Perform this', action=TRAP_ACTION)
         self.assertEqual(act.text, 'Perform this', 'Button text does not match string given to method')
         self.assertIn(act, self.menu._options, 'Button was returned but not added to its parent menu')
 
     def test_addSubmenuButton(self):
-        somesubmenu = Menu(SH1106, title='Test menu')
+        somesubmenu = Menu(DISPLAY, title='Test menu')
         sub = self.menu.add_submenu_button('Title here', sub=somesubmenu)
         self.assertEqual(sub.text, 'Title here', 'Button text does not match string given to method')
         self.assertIn(sub, self.menu._options, 'Button was returned but not added to its parent menu')
 
     def test_addValueButton(self):
         someotherval = 123
-        val = self.menu.add_value_button('More arg txt')
-        self.assertEqual(val.text, 'More arg txt')
+        val = self.menu.add_value_button('More arg txt', someotherval)
+        self.assertEqual(val.text, 'More arg txt', 'Given title not assigned to button')
         self.assertIn(val, self.menu._options, 'Button was returned but not added to its parent menu')
 
     def test_addSubmenus_useDiscreteOptionsLists(self):
-        alt_sub = Menu(self.disp)
+        alt_sub = Menu(DISPLAY)
         self.menu.add_submenu_button('Alt menu', alt_sub)
         self.assertNotEqual(alt_sub._options, self.menu._options, 'Distinct child submenu references the same _options object as its parent')
 
     def test_addSubmenus_siblingsUseDiscreteOptionsLists(self):
-        alt_sub = Menu(self.disp)
+        alt_sub = Menu(DISPLAY)
         self.menu.add_submenu_button('Alt menu', alt_sub)
-        alt_sub.add_submenu_button('Going deeper', Menu(self.disp))
+        alt_sub.add_submenu_button('Going deeper', Menu(DISPLAY))
 
-        dif_sub = Menu(self.disp)
+        dif_sub = Menu(DISPLAY)
         self.menu.add_submenu_button('Dif menu', dif_sub)
 
         self.assertNotEqual(alt_sub._options, dif_sub._options, 'Distinct submenu siblings reference the same _options object')
 
+    def test_addSubmenus_addsExitButton(self):
+        btn_text = 'GO UP'
+        submenu = Menu(DISPLAY)
+        og_len = len(submenu._options)
+        
+        self.menu.add_submenu_button('my btn', submenu, add_upmenu_btn=btn_text)
+        new_len = len(submenu._options)
+        self.assertNotEqual(og_len, new_len, 'NO Button was added to the submenu!')
+
+        exit_btn = submenu._options[new_len - 1]
+        self.assertEqual(btn_text, exit_btn.text, 'Added button text does not match expected')
+
+        
 
 class MenuBuildingTests(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_buildGroup(self):
-        menu = Menu(SH1106)
-        anothermenu = Menu(SH1106)
-        act = menu.add_action_button('New action', action=MenuOptionTests.trap_action)
+    def test_buildGroup_menuWithTitle(self):
+        menu = Menu(DISPLAY)
+        anothermenu = Menu(DISPLAY)
+        rando_valuo = 450
+        act = menu.add_action_button('New action', action=TRAP_ACTION)
         sub = menu.add_submenu_button('Expand...', anothermenu)
-        val = menu.add_value_button('Volume')
+        val = menu.add_value_button('Volume', rando_valuo)
         grp = menu.build_options_as_group()
-        self.assertEqual(4, len(grp))
         self.assertIn(act, menu._options)
         self.assertIn(sub, menu._options)
         self.assertIn(val, menu._options)
+        self.assertEqual(4, len(grp), 'Constructed group contains missing or unpected elements')
+
+    def test_buildGroup_menuNoTitle(self):
+        menu = Menu(DISPLAY, show_menu_title=False)
+        menu.add_action_button('Accio test results', action=TRAP_ACTION)
+        grp = menu.build_options_as_group()
+        self.assertEqual(1, len(grp), 'Constructed group contains unexpected elements')
