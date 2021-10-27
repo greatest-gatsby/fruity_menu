@@ -1,4 +1,4 @@
-from math import trunc
+from math import ceil, floor
 from displayio import Display, Group
 import terminalio
 from adafruit_display_text import label
@@ -9,7 +9,7 @@ OPT_HIGHLIGHT_BACK_COLOR = 0xFFAA00
 OPT_TEXT_COLOR = 0xFFAA00
 OPT_BACK_COLOR = 0x0000FF
 OPT_PADDING = 24
-PX_PER_LINE = 16
+PX_PER_LINE = 15
 INITIAL_Y = 8
 
 class MenuOption:
@@ -126,13 +126,29 @@ class Menu:
         if self._show_title:
             lbl = self.get_title_label()
             grp.append(lbl)
+
+        # determine number of rows to fit on-screen
+        remaining_y_px = self._display.height - self._y
+        max_rows_per_page = floor(remaining_y_px / PX_PER_LINE)
         
-        for i in range(len(self._options)):
-            opt = self._options[i]
+        # determine the indices of the page and row for paginated display
+        if (self._selection == 0):
+            selected_relative_row = 0
+            selected_page = 0
+        else:
+            selected_relative_row = self._selection % max_rows_per_page
+            selected_page = floor(self._selection / max_rows_per_page)
+        
+        index_offset = selected_page * max_rows_per_page        
+
+        for i in range(max_rows_per_page):
+            if (i + index_offset >= len(self._options)):
+                continue
+            opt = self._options[i + index_offset]
             lbl = label.Label(terminalio.FONT)
             lbl.text = opt.text
 
-            if self._selection == i:
+            if i == selected_relative_row:
                 lbl.color = OPT_HIGHLIGHT_TEXT_COLOR
                 lbl.background_color = OPT_HIGHLIGHT_BACK_COLOR
             else:
