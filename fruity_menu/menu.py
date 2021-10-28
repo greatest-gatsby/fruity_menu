@@ -135,7 +135,7 @@ class Menu(AbstractMenu):
 
     def build_options_as_group(self):
         """Builds a `displayio.Group` of this menu and all its options and current selection."""
-        self._y = INITIAL_Y
+        self._y = 0
         grp = Group()
         if self._show_title:
             lbl = self.get_title_label()
