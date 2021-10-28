@@ -7,15 +7,23 @@ from fruity_menu.adjust import AdjustMenu, BoolMenu
 from fruity_menu.abstract import AbstractMenu
 from fruity_menu.options import ActionButton, SubmenuButton, ValueButton
 
-OPTIONS = 3
 OPT_HIGHLIGHT_TEXT_COLOR = 0x0000FF
+"""RGB color code to use for text in selected items"""
+
 OPT_HIGHLIGHT_BACK_COLOR = 0xFFAA00
+"""RGB color code to use for the background in selected items"""
+
 OPT_TEXT_COLOR = 0xFFAA00
+"""RGB color code to use for text in UNselected items."""
+
 OPT_BACK_COLOR = 0x0000FF
-OPT_PADDING = 24
+"""RGB color code to use for the background in UNselected items"""
+
 PX_PER_LINE = 14
-INITIAL_Y = 8
+"""Number of pixels each line is allotted. This should roughly match the pt and scale of the font."""
+
 SCROLL_UP_AFTER_EXIT_SUBMENU = False
+"""Resets selected position in list to the first item in the list when navigating back to a menu after closing a submenu """
 
 class Menu(AbstractMenu):
     """
@@ -66,7 +74,7 @@ class Menu(AbstractMenu):
     X-coordinate for rendering menu
     """
 
-    _y = INITIAL_Y
+    _y = 0
     """
     Y-coordinate for rendering menu
     """
@@ -160,9 +168,8 @@ class Menu(AbstractMenu):
             else:
                 lbl.color = OPT_TEXT_COLOR
                 lbl.background_color = OPT_BACK_COLOR
-
-            lbl.x = self._x
-            lbl.y = self._y
+            lbl.anchor_point = (0,0)
+            lbl.anchored_position = (self._x, self._y)
             grp.append(lbl)
 
             self._y = self._y + PX_PER_LINE
@@ -172,10 +179,12 @@ class Menu(AbstractMenu):
 
     def get_title_label(self):
         """Gets the Label for this menu's title and adjusts the builder's coordinates to compensate for the object"""
-        lbl = label.Label(terminalio.FONT, text='    ' + self._title, color=OPT_HIGHLIGHT_TEXT_COLOR, background_color=OPT_HIGHLIGHT_BACK_COLOR)
-        lbl.x = 0
-        lbl.y = self._y
-
+        lbl = label.Label(terminalio.FONT)
+        lbl.text = '    ' + self._title
+        lbl.color = OPT_HIGHLIGHT_TEXT_COLOR
+        lbl.background_color = OPT_HIGHLIGHT_BACK_COLOR
+        lbl.anchored_position = (0, self._y)
+        lbl.anchor_point = (0, 0)
         self._y = self._y + PX_PER_LINE
         return lbl
     

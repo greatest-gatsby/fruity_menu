@@ -33,7 +33,6 @@ class SubmenuButton(AbstractMenuOption):
 
     def click(self):
         super().click()
-        #print('Opening submenu...')
         self._notify_parent(self.submenu)
         self.submenu.show_menu()
 
@@ -56,4 +55,3 @@ class ValueButton(AbstractMenuOption):
         super().click()
         print('Opening value submenu...')
         self._notify_parent(self.menu)
-        #self.menu.show_menu()
