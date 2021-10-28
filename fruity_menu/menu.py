@@ -3,7 +3,7 @@ from displayio import Display, Group
 import terminalio
 from adafruit_display_text import label
 
-import fruity_menu.adjust
+from fruity_menu.adjust import AdjustMenu, BoolMenu
 from fruity_menu.abstract import AbstractMenu
 from fruity_menu.options import ActionButton, SubmenuButton, ValueButton
 
@@ -116,7 +116,7 @@ class Menu(AbstractMenu):
         """Add a button to this menu that lets users modify the value of the given variable"""
         
         if (type(value) is bool):
-            submenu = fruity_menu.adjust.BoolMenu(value, title, self._height, self._width)
+            submenu = BoolMenu(value, title, self._height, self._width)
         else:
             raise NotImplementedError()
             
@@ -199,7 +199,7 @@ class Menu(AbstractMenu):
         else:
             # if submenu active, then render that submenu
             # main and submenus can show themselves, but adjustmenus have to *be* shown
-            if (isinstance(self._activated_submenu, fruity_menu.adjust.AdjustMenu)):
+            if (isinstance(self._activated_submenu, AdjustMenu)):
                 grp = self._activated_submenu.get_displayio_group()
                 self._display.show(grp)
                 return grp
@@ -210,7 +210,7 @@ class Menu(AbstractMenu):
         """Clicks the currently selected item and returns whether this menu is still open (True) or closed (False)"""
         # Exec submenu if open
         if (self._activated_submenu != None):
-            if (isinstance(self._activated_submenu, fruity_menu.adjust.AdjustMenu)):
+            if (isinstance(self._activated_submenu, AdjustMenu)):
                 self._submenu_is_closing()
                 return True
             else:
@@ -254,5 +254,5 @@ class Menu(AbstractMenu):
     def _submenu_is_opening(self, activated_menu):
         self._activated_submenu = activated_menu
 
-        if (isinstance(self._activated_submenu, fruity_menu.adjust.AdjustMenu)):
+        if (isinstance(self._activated_submenu, AdjustMenu)):
             self.show_menu()

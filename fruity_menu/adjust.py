@@ -1,7 +1,6 @@
 from displayio import Group
 from terminalio import FONT
 from fruity_menu.abstract import AbstractMenu
-import fruity_menu.menu
 
 from adafruit_display_shapes.rect import Rect
 from adafruit_display_text.label import Label
