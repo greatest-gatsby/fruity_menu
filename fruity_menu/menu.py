@@ -44,7 +44,7 @@ class Menu(AbstractMenu):
     The Display object instatiated from your driver/main. Used to access the display and controls.
     """
     
-    _selection = 0
+    _selection: int = 0
     """
     The 0-based index of the currently selected item
     """
@@ -54,7 +54,7 @@ class Menu(AbstractMenu):
     List of menu items
     """
 
-    _activated_submenu = None
+    _activated_submenu: AbstractMenu = None
     """
     The currently opened submenu, if any
     """
@@ -64,29 +64,29 @@ class Menu(AbstractMenu):
     Title for this menu
     """
    
-    _show_title = True
+    _show_title: bool = True
     """
     Whether to show Title at the top of the menu
     """
 
-    _x = 4
+    _x: int = 4
     """
     X-coordinate for rendering menu
     """
 
-    _y = 0
+    _y: int = 0
     """
     Y-coordinate for rendering menu
     """
 
-    def __init__(self, display: Display, show_menu_title = True, title: str = 'Menu'):
+    def __init__(self, display: Display, height, width, show_menu_title = True, title: str = 'Menu'):
         """
         Create a Menu for the given display.
         """
         self._display = display
         if (self._display is not None):
-            self._width = display.width
-            self._height = display.height
+            self._width = width
+            self._height = height
         self._title = title
         self._show_title = show_menu_title
         self._options = []
@@ -95,7 +95,7 @@ class Menu(AbstractMenu):
         """
         Create a Menu with the given width and height in pixels.
         """
-        menu = Menu(None, show_menu_title, title)
+        menu = Menu(None, height, width, show_menu_title, title)
         menu._width = width
         menu._height = height
         return menu
@@ -133,7 +133,7 @@ class Menu(AbstractMenu):
         self._options.append(val)
         return val
 
-    def build_options_as_group(self):
+    def build_displayio_group(self):
         """Builds a `displayio.Group` of this menu and all its options and current selection."""
         self._y = 0
         grp = Group()
@@ -142,7 +142,7 @@ class Menu(AbstractMenu):
             grp.append(lbl)
 
         # determine number of rows to fit on-screen
-        remaining_y_px = self._display.height - self._y
+        remaining_y_px = self._height - self._y
         max_rows_per_page = floor(remaining_y_px / PX_PER_LINE)
         
         # determine the indices of the page and row for paginated display
@@ -201,7 +201,7 @@ class Menu(AbstractMenu):
         """
         # if no submenu is open, then show this menu
         if self._activated_submenu is None:
-            grp = self.build_options_as_group()
+            grp = self.build_displayio_group()
             self._display.show(grp)
             self._is_active = True
             return grp
