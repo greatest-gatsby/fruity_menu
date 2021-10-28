@@ -8,8 +8,8 @@ to add options and submenus.
 ```py
 menu = Menu(display, title='Main Menu')
 menu.add_action_button('Shut down', action=myobj.dafunc)
-sub_settings = Menu(display, title='Settings')
 
+sub_settings = Menu(display, title='Settings')
 menu.add_submenu_button('Open Settings...', sub_settings)
 ```
 

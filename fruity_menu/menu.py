@@ -3,6 +3,7 @@ from displayio import Display, Group
 import terminalio
 from adafruit_display_text import label
 
+
 OPTIONS = 3
 OPT_HIGHLIGHT_TEXT_COLOR = 0x0000FF
 OPT_HIGHLIGHT_BACK_COLOR = 0xFFAA00
@@ -246,6 +247,9 @@ class ActionButton(MenuOption):
         
 
 class SubmenuButton(MenuOption):
+    """
+    SubmenuButtons open nested Menus when clicked.
+    """
     submenu: Menu = None
     _notify_parent = None
 
@@ -261,6 +265,10 @@ class SubmenuButton(MenuOption):
         self.submenu.show_menu()
 
 class ValueButton(MenuOption):
+    """
+    ValueButtons let users modify property values.
+    Only some types are supported.
+    """
     target = None
 
     def __init__(self, title: str, value):
