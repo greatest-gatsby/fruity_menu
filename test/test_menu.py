@@ -4,6 +4,9 @@ from fruity_menu.menu import Menu, ActionButton, SubmenuButton, ValueButton, Men
 from adafruit_displayio_sh1106 import SH1106
 
 DISPLAY = SH1106
+WIDTH = 128
+HEIGHT = 32
+
 def TRAP_ACTION():
     raise AssertionError('You should not have executed me!')
 
@@ -26,7 +29,7 @@ class MenuOptionTests(unittest.TestCase):
     menu = None
 
     def setUp(self):
-        self.menu = Menu(DISPLAY)
+        self.menu = Menu.without_display(WIDTH, HEIGHT)
 
     def test_menu_constructor_setsFields(self):
         menu_title = 'This is a title'
@@ -34,6 +37,18 @@ class MenuOptionTests(unittest.TestCase):
         menu = Menu(DISPLAY, show_menu_title=menu_show_title, title=menu_title)
         self.assertEqual(menu_show_title, menu._show_title)
         self.assertEqual(menu_title, menu._title)
+
+    def test_menu_withoutDisplay_setsFields(self):
+        menu_title = 'One more time'
+        menu_show_title = True
+        h = 16
+        w = 16
+        menu = Menu.without_display(h, w, menu_show_title, menu_title)
+        
+        self.assertEqual(menu_title, menu._title)
+        self.assertEqual(menu_show_title, menu._show_title)
+        self.assertEqual(h, menu._height)
+        self.assertEqual(w, menu._width)
 
     def test_action_constructor_setsFields(self):
         btn_title = 'My title'

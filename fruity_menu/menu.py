@@ -81,14 +81,32 @@ class Menu:
     Y-coordinate for rendering menu
     """
 
+    _width = 128
+    """The width in pixels of the constructed menus"""
+    
+    _height = 32
+    """The height in pixels of the constructed menus"""
+
     def __init__(self, display: Display, show_menu_title = True, title: str = 'Menu'):
         """
         Create a Menu for the given display.
         """
         self._display = display
+        if (self._display is not None):
+            self._width = display.width
+            self._height = display.height
         self._title = title
         self._show_title = show_menu_title
         self._options = []
+
+    def without_display(height: int, width: int, show_menu_title = True, title: str = 'Menu'):
+        """
+        Create a Menu with the given width and height in pixels.
+        """
+        menu = Menu(None, show_menu_title, title)
+        menu._width = width
+        menu._height = height
+        return menu
 
     def add_action_button(self, title: str, action):
         """Add a button to this menu that invokes the given function when clicked."""
@@ -173,7 +191,15 @@ class Menu:
     
 
     def show_menu(self):
-        """Builds the option group and renders it to the display"""
+        """
+        Builds the option group and renders it to the display.
+
+        If this Menu was built without a Display object, then this function
+        will return the `displayio.Group` that needs to be shown on the display.
+
+        If this Menu was built WITH a Display object, then this function
+        will instead display the `Group` itself and return nothing.
+        """
         # if no submenu is open, then show this menu
         if self._activated_submenu is None:
             grp = self.build_options_as_group()
