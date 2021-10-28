@@ -210,15 +210,18 @@ class Menu(AbstractMenu):
         """Clicks the currently selected item and returns whether this menu is still open (True) or closed (False)"""
         # Exec submenu if open
         if (self._activated_submenu != None):
+            # AdjustMenus have to be reloaded by their parent menu
             if (isinstance(self._activated_submenu, AdjustMenu)):
-                self._submenu_is_closing()
+                adjust_wants_to_close = not self._activated_submenu.click()
+                if (adjust_wants_to_close):
+                    self._submenu_is_closing()
                 return True
             else:
                 return self._activated_submenu.click()
-        
-        # otherwise click this menu
-        selected = self._options[self._selection]
-        return selected.click()
+        else:
+            # otherwise click this menu
+            selected = self._options[self._selection]
+            return selected.click()
             
 
     def scroll(self, delta: int):

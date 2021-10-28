@@ -45,7 +45,6 @@ class BoolMenu(AdjustMenu):
         prop_text.anchored_position = (self._width / 2, self._height / 2)
         grp.append(prop_text)
 
-        print('Got BoolMenu Group')
         return grp
 
     def get_value(self):
@@ -62,7 +61,7 @@ class BoolMenu(AdjustMenu):
         return title
 
     def click(self):
-        print('BoolMenu CLICK')
+        return False
 
     def scroll(self, delta):
         if delta % 2 == 1:
