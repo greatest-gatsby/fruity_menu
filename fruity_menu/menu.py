@@ -3,6 +3,9 @@ from displayio import Display, Group
 import terminalio
 from adafruit_display_text import label
 
+import fruity_menu.adjust
+from fruity_menu.abstract import AbstractMenu
+from fruity_menu.options import ActionButton, SubmenuButton, ValueButton
 
 OPTIONS = 3
 OPT_HIGHLIGHT_TEXT_COLOR = 0x0000FF
@@ -12,22 +15,9 @@ OPT_BACK_COLOR = 0x0000FF
 OPT_PADDING = 24
 PX_PER_LINE = 14
 INITIAL_Y = 8
+SCROLL_UP_AFTER_EXIT_SUBMENU = False
 
-class MenuOption:
-    """
-    Building block of all options a menu can display.
-    """
-    text = ''
-    upmenu = None
-
-    def __init__(self, title: str):
-        self.text = title
-
-    def click(self):
-        print('Click:',self.text)
-        return True
-
-class Menu:
+class Menu(AbstractMenu):
     """
     The main class for building a menu. This is what most library users should be instatiating.
 
@@ -81,12 +71,6 @@ class Menu:
     Y-coordinate for rendering menu
     """
 
-    _width = 128
-    """The width in pixels of the constructed menus"""
-    
-    _height = 32
-    """The height in pixels of the constructed menus"""
-
     def __init__(self, display: Display, show_menu_title = True, title: str = 'Menu'):
         """
         Create a Menu for the given display.
@@ -130,7 +114,13 @@ class Menu:
 
     def add_value_button(self, title: str, value):
         """Add a button to this menu that lets users modify the value of the given variable"""
-        val = ValueButton(title, value)
+        
+        if (type(value) is bool):
+            submenu = fruity_menu.adjust.BoolMenu(value, title, self._height, self._width)
+        else:
+            raise NotImplementedError()
+            
+        val = ValueButton(title, value, submenu, self._submenu_is_opening)
         val.upmenu = self
         self._options.append(val)
         return val
@@ -198,23 +188,33 @@ class Menu:
         will return the `displayio.Group` that needs to be shown on the display.
 
         If this Menu was built WITH a Display object, then this function
-        will instead display the `Group` itself and return nothing.
+        will also display the `Group` itself.
         """
         # if no submenu is open, then show this menu
         if self._activated_submenu is None:
             grp = self.build_options_as_group()
             self._display.show(grp)
             self._is_active = True
-            return
+            return grp
         else:
             # if submenu active, then render that submenu
-            return self._activated_submenu.show_menu()
+            # main and submenus can show themselves, but adjustmenus have to *be* shown
+            if (isinstance(self._activated_submenu, fruity_menu.adjust.AdjustMenu)):
+                grp = self._activated_submenu.get_displayio_group()
+                self._display.show(grp)
+                return grp
+            else:
+                return self._activated_submenu.show_menu()
 
-    def click_selected(self):
+    def click(self):
         """Clicks the currently selected item and returns whether this menu is still open (True) or closed (False)"""
         # Exec submenu if open
         if (self._activated_submenu != None):
-            return self._activated_submenu.click_selected()
+            if (isinstance(self._activated_submenu, fruity_menu.adjust.AdjustMenu)):
+                self._submenu_is_closing()
+                return True
+            else:
+                return self._activated_submenu.click()
         
         # otherwise click this menu
         selected = self._options[self._selection]
@@ -246,57 +246,13 @@ class Menu:
         return self._selection
     
     def _submenu_is_closing(self):
+        if (SCROLL_UP_AFTER_EXIT_SUBMENU):
+            self._selection = 0
         self._activated_submenu = None
         self.show_menu()
 
     def _submenu_is_opening(self, activated_menu):
         self._activated_submenu = activated_menu
 
-
-
-class ActionButton(MenuOption):
-    """
-    ActionButtons are used to invoke Python functions when the user clicks the button.
-    For example, hooking the action to your menu's toggle function can work as an Exit button.
-    """
-    _action = None
-
-    def __init__(self, text: str, action):
-        """Creates an action button with the given title and that will execute the given action when clicked"""
-        self._action = action
-        super().__init__(text)
-
-    def click(self):
-        """Invoke this button's stored action"""
-        super().click()
-        return self._action()
-        
-
-class SubmenuButton(MenuOption):
-    """
-    SubmenuButtons open nested Menus when clicked.
-    """
-    submenu: Menu = None
-    _notify_parent = None
-
-    def __init__(self, title: str, sub: Menu, on_open):
-        self.submenu = sub
-        self._notify_parent = on_open
-        super().__init__(title)
-
-    def click(self):
-        super().click()
-        print('Opening submenu...')
-        self._notify_parent(self.submenu)
-        self.submenu.show_menu()
-
-class ValueButton(MenuOption):
-    """
-    ValueButtons let users modify property values.
-    Only some types are supported.
-    """
-    target = None
-
-    def __init__(self, title: str, value):
-        self.target = value
-        super().__init__(title)
+        if (isinstance(self._activated_submenu, fruity_menu.adjust.AdjustMenu)):
+            self.show_menu()

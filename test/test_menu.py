@@ -1,7 +1,12 @@
 import unittest
 
-from fruity_menu.menu import Menu, ActionButton, SubmenuButton, ValueButton, MenuOption
 from adafruit_displayio_sh1106 import SH1106
+
+from fruity_menu.abstract import AbstractMenuOption
+from fruity_menu.options import ActionButton, SubmenuButton, ValueButton
+from fruity_menu.menu import Menu
+
+
 
 DISPLAY = SH1106
 WIDTH = 128
@@ -65,13 +70,13 @@ class MenuOptionTests(unittest.TestCase):
     def test_value_constructor(self):
         btn_title = 'valyo'
         btn_val = 890
-        val_btn = ValueButton(btn_title, btn_val)
+        val_btn = ValueButton(btn_title, btn_val, Menu(DISPLAY), PRINT_ACTION)
         self.assertEqual(btn_title, val_btn.text, 'Given title not assigned to button')
         self.assertEqual(btn_val, val_btn.target, 'Given value not assigned to button')
 
 
     def test_menuOption_constructor_setsFields(self):
-        opt = MenuOption('My title')
+        opt = AbstractMenuOption('My title')
         self.assertEqual(opt.text, 'My title')
 
     def test_addActionButton_setsFields(self):
