@@ -3,7 +3,7 @@ from displayio import Display, Group
 import terminalio
 from adafruit_display_text import label
 
-from fruity_menu.adjust import AdjustMenu, BoolMenu
+from fruity_menu.adjust import AdjustMenu, BoolMenu, NumberMenu
 from fruity_menu.abstract import AbstractMenu
 from fruity_menu.options import ActionButton, SubmenuButton, ValueButton
 
@@ -22,7 +22,7 @@ OPT_BACK_COLOR = 0x0000FF
 PX_PER_LINE = 14
 """Number of pixels each line is allotted. This should roughly match the pt and scale of the font."""
 
-SCROLL_UP_AFTER_EXIT_SUBMENU = False
+SCROLL_UP_AFTER_EXIT_SUBMENU = True
 """Resets selected position in list to the first item in the list when navigating back to a menu after closing a submenu """
 
 class Menu(AbstractMenu):
@@ -123,8 +123,10 @@ class Menu(AbstractMenu):
     def add_value_button(self, title: str, value):
         """Add a button to this menu that lets users modify the value of the given variable"""
         
-        if (type(value) is bool):
+        if isinstance(value, bool):
             submenu = BoolMenu(value, title, self._height, self._width)
+        elif isinstance(value, int) or isinstance(value, float):
+            submenu = NumberMenu(number=value, label=title, height=self._height, width=self._width)
         else:
             raise NotImplementedError()
             
@@ -211,6 +213,7 @@ class Menu(AbstractMenu):
             if (isinstance(self._activated_submenu, AdjustMenu)):
                 grp = self._activated_submenu.get_displayio_group()
                 self._display.show(grp)
+                print(grp)
                 return grp
             else:
                 return self._activated_submenu.show_menu()
@@ -219,6 +222,7 @@ class Menu(AbstractMenu):
         """Clicks the currently selected item and returns whether this menu is still open (True) or closed (False)"""
         # Exec submenu if open
         if (self._activated_submenu != None):
+            #Eprint('No Submenu after click')
             # AdjustMenus have to be reloaded by their parent menu
             if (isinstance(self._activated_submenu, AdjustMenu)):
                 adjust_wants_to_close = not self._activated_submenu.click()
