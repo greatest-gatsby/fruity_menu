@@ -213,7 +213,6 @@ class Menu(AbstractMenu):
             if (isinstance(self._activated_submenu, AdjustMenu)):
                 grp = self._activated_submenu.get_displayio_group()
                 self._display.show(grp)
-                print(grp)
                 return grp
             else:
                 return self._activated_submenu.show_menu()

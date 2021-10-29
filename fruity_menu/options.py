@@ -53,5 +53,4 @@ class ValueButton(AbstractMenuOption):
 
     def click(self):
         super().click()
-        print('Opening value submenu...')
         self._notify_parent(self.menu)

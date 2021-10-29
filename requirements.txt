@@ -1,2 +1,3 @@
 adafruit_blinka_displayio==0.7.0
 adafruit_circuitpython_display_text==2.21.0
+adafruit_circuitpython_displayio_sh1106==1.2.0

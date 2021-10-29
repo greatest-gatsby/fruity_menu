@@ -3,7 +3,7 @@ import unittest
 from fruity_menu.adjust import BoolMenu
 from test.test_menu import DISPLAY, HEIGHT, WIDTH
 
-HEIGHT = 32
+HEIGHT = 64
 WIDTH = 128
 
 class BoolMenuTests(unittest.TestCase):

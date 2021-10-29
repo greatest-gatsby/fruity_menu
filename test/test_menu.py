@@ -11,7 +11,7 @@ from fruity_menu.menu import Menu, OPT_BACK_COLOR, OPT_HIGHLIGHT_BACK_COLOR, OPT
 
 DISPLAY = SH1106
 WIDTH = 128
-HEIGHT = 32
+HEIGHT = 64
 
 def get_mock_display():
     return Mock(Display(None, [], width=WIDTH, height=HEIGHT))
