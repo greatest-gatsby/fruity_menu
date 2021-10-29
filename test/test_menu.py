@@ -1,22 +1,25 @@
 import unittest
+from unittest.mock import Mock
 
 from adafruit_displayio_sh1106 import SH1106
+from displayio import Display, Group
 
 from fruity_menu.abstract import AbstractMenuOption
+from fruity_menu.adjust import AdjustMenu
 from fruity_menu.options import ActionButton, SubmenuButton, ValueButton
 from fruity_menu.menu import Menu, OPT_BACK_COLOR, OPT_HIGHLIGHT_BACK_COLOR, OPT_HIGHLIGHT_TEXT_COLOR, OPT_TEXT_COLOR
-
-
 
 DISPLAY = SH1106
 WIDTH = 128
 HEIGHT = 32
 
+def get_mock_display():
+    return Mock(Display(None, [], width=WIDTH, height=HEIGHT))
+
 def TRAP_ACTION():
     raise AssertionError('You should not have executed me!')
 
 def PRINT_ACTION(arg1 = None, arg2 = None, arg3 = None, arg4 = None):
-    print('you asked for it')
     if (arg1 is not None):
         print('\t',arg1)
     if (arg2 is not None):
@@ -25,6 +28,9 @@ def PRINT_ACTION(arg1 = None, arg2 = None, arg3 = None, arg4 = None):
         print('\t',arg3)
     if (arg4 is not None):
         print('\t',arg4)
+
+def TRUE_ACTION():
+    return True
 
 class MenuTests(unittest.TestCase):
     def test_constructor_requiresDisplay(self):
@@ -128,6 +134,23 @@ class MenuOptionTests(unittest.TestCase):
         exit_btn = submenu._options[new_len - 1]
         self.assertEqual(btn_text, exit_btn.text, 'Added button text does not match expected')
 
+    def test_showMenu_hasSubmenu(self):
+        m = Menu(get_mock_display(), HEIGHT, WIDTH)
+        mock_submenu = Mock(get_displayio_group=PRINT_ACTION)
+        m._activated_submenu = mock_submenu
+        self.assertNotEqual(None, m.show_menu())
+        
+
+    def test_showMenu_noSubmenu(self):
+        m = Menu(get_mock_display(), HEIGHT, WIDTH)
+        self.assertNotEqual(None, m.show_menu())
+
+    def test_showMenu_hasAdjustMenu(self):
+        m = Menu(get_mock_display(), HEIGHT, WIDTH)
+        mock_submenu = Mock(AdjustMenu('', HEIGHT, WIDTH), get_displayio_group=TRUE_ACTION)
+        m._activated_submenu = mock_submenu
+        self.assertEqual(True, m.show_menu())
+
         
 
 class MenuBuildingTests(unittest.TestCase):
@@ -155,15 +178,16 @@ class MenuBuildingTests(unittest.TestCase):
         self.assertEqual(2, len(grp), 'Constructed group contains unexpected elements')
 
     def test_buildGroup_highlightsExpected(self):
+        chosen_selection = 1
         menu = Menu(DISPLAY, HEIGHT, WIDTH, show_menu_title=False)
         menu.add_action_button('I am not selected', TRAP_ACTION)
         menu.add_action_button('I AM selected', PRINT_ACTION)
-        menu._selection = 1
+        menu._selection = chosen_selection
 
         grp = menu.build_displayio_group()
 
         self.assertEqual(2, len(grp))
         self.assertEqual(OPT_TEXT_COLOR, grp[0].color)
         self.assertEqual(OPT_BACK_COLOR, grp[0].background_color)
-        self.assertEqual(OPT_HIGHLIGHT_TEXT_COLOR, grp[1].color)
-        self.assertEqual(OPT_HIGHLIGHT_BACK_COLOR, grp[1].background_color)
+        self.assertEqual(OPT_HIGHLIGHT_TEXT_COLOR, grp[chosen_selection].color)
+        self.assertEqual(OPT_HIGHLIGHT_BACK_COLOR, grp[chosen_selection].background_color)
