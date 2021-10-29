@@ -49,6 +49,7 @@ class MenuOptionTests(unittest.TestCase):
         self.assertEqual(menu_show_title, menu._show_title)
         self.assertEqual(menu_title, menu._title)
 
+
     def test_menu_withoutDisplay_setsFields(self):
         menu_title = 'One more time'
         menu_show_title = True
@@ -107,6 +108,12 @@ class MenuOptionTests(unittest.TestCase):
         self.assertEqual(val.text, 'Sir', 'Given title not assigned to button')
         self.assertIn(val, self.menu._options, 'Button was returned but not added to its parent menu')
 
+    def test_addValueButton_throwsIfUnsupportedType(self):
+        someotherval = Group()
+        with self.assertRaises(NotImplementedError):
+            self.menu.add_value_button('Throw me', someotherval, 
+                                    'ValueButton incorrectly believed it could handle type {}'.format(type(someotherval)))
+
     def test_addSubmenu_useDiscreteOptionsLists(self):
         alt_sub = Menu(DISPLAY, HEIGHT, WIDTH)
         self.menu.add_submenu_button('Alt menu', alt_sub)
@@ -136,22 +143,20 @@ class MenuOptionTests(unittest.TestCase):
 
     def test_showMenu_hasSubmenu(self):
         m = Menu(get_mock_display(), HEIGHT, WIDTH)
-        mock_submenu = Mock(get_displayio_group=PRINT_ACTION)
+        mock_submenu = Menu(get_mock_display(), HEIGHT, WIDTH)
         m._activated_submenu = mock_submenu
-        self.assertNotEqual(None, m.show_menu())
-        
+        self.assertTrue(isinstance(m.show_menu(), Group), 'Show_menu() did not return the displayio group it used')
 
     def test_showMenu_noSubmenu(self):
         m = Menu(get_mock_display(), HEIGHT, WIDTH)
-        self.assertNotEqual(None, m.show_menu())
+        self.assertTrue(isinstance(m.show_menu(), Group), 'Show_menu() did not return the displayio group it used')
 
     def test_showMenu_hasAdjustMenu(self):
         m = Menu(get_mock_display(), HEIGHT, WIDTH)
         mock_submenu = Mock(AdjustMenu('', HEIGHT, WIDTH), get_displayio_group=TRUE_ACTION)
         m._activated_submenu = mock_submenu
-        self.assertEqual(True, m.show_menu())
+        self.assertEqual(True, m.show_menu(), )
 
-        
 
 class MenuBuildingTests(unittest.TestCase):
     def setUp(self):

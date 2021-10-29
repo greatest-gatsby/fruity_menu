@@ -1,7 +1,7 @@
 from math import ceil, floor
 from displayio import Display, Group
 import terminalio
-from adafruit_display_text import label
+from adafruit_display_text.label import Label
 
 from fruity_menu.adjust import AdjustMenu, BoolMenu, NumberMenu
 from fruity_menu.abstract import AbstractMenu
@@ -100,16 +100,20 @@ class Menu(AbstractMenu):
         menu._height = height
         return menu
 
-    def add_action_button(self, title: str, action):
-        """Add a button to this menu that invokes the given function when clicked."""
+    def add_action_button(self, title: str, action) -> ActionButton:
+        """
+        Adds a button to this menu that invokes the given function when clicked.
+        The created button is then returned.
+        """
         act = ActionButton(title, action)
         act.upmenu = self
         self._options.append(act)
         return act
 
-    def add_submenu_button(self, title: str, sub, add_upmenu_btn = '<- Back'):
+    def add_submenu_button(self, title: str, sub, add_upmenu_btn = '<- Back') -> SubmenuButton:
         """
-        Add a button to this menu that opens the given submenu when clicked.
+        Adds a button to this menu that opens the given submenu when clicked.
+        The created button is then returned.
 
         If a string is provided for `add_upmenu_btn`, the submenu will get an exit button
         which navigates up a level to this parent menu. The string will be used as the button's label.
@@ -120,13 +124,13 @@ class Menu(AbstractMenu):
         self._options.append(menubut)
         return menubut
 
-    def add_value_button(self, title: str, value):
+    def add_value_button(self, title: str, value, on_value_set = None) -> ValueButton:
         """Add a button to this menu that lets users modify the value of the given variable"""
         
         if isinstance(value, bool):
-            submenu = BoolMenu(value, title, self._height, self._width)
+            submenu = BoolMenu(value, title, self._height, self._width, value_set=on_value_set)
         elif isinstance(value, int) or isinstance(value, float):
-            submenu = NumberMenu(number=value, label=title, height=self._height, width=self._width)
+            submenu = NumberMenu(number=value, label=title, height=self._height, width=self._width, value_set=on_value_set)
         else:
             raise NotImplementedError()
             
@@ -135,7 +139,7 @@ class Menu(AbstractMenu):
         self._options.append(val)
         return val
 
-    def build_displayio_group(self):
+    def build_displayio_group(self) -> Group:
         """Builds a `displayio.Group` of this menu and all its options and current selection."""
         self._y = 0
         grp = Group()
@@ -161,7 +165,7 @@ class Menu(AbstractMenu):
             if (i + index_offset >= len(self._options)):
                 continue
             opt = self._options[i + index_offset]
-            lbl = label.Label(terminalio.FONT)
+            lbl = Label(terminalio.FONT)
             lbl.text = opt.text
 
             if i == selected_relative_row:
@@ -179,9 +183,9 @@ class Menu(AbstractMenu):
         return grp
 
 
-    def get_title_label(self):
+    def get_title_label(self) -> Label:
         """Gets the Label for this menu's title and adjusts the builder's coordinates to compensate for the object"""
-        lbl = label.Label(terminalio.FONT)
+        lbl = Label(terminalio.FONT)
         lbl.text = '    ' + self._title
         lbl.color = OPT_HIGHLIGHT_TEXT_COLOR
         lbl.background_color = OPT_HIGHLIGHT_BACK_COLOR
@@ -191,7 +195,7 @@ class Menu(AbstractMenu):
         return lbl
     
 
-    def show_menu(self):
+    def show_menu(self) -> Group:
         """
         Builds the option group and renders it to the display.
 
@@ -217,11 +221,10 @@ class Menu(AbstractMenu):
             else:
                 return self._activated_submenu.show_menu()
 
-    def click(self):
+    def click(self) -> bool:
         """Clicks the currently selected item and returns whether this menu is still open (True) or closed (False)"""
         # Exec submenu if open
         if (self._activated_submenu != None):
-            #Eprint('No Submenu after click')
             # AdjustMenus have to be reloaded by their parent menu
             if (isinstance(self._activated_submenu, AdjustMenu)):
                 adjust_wants_to_close = not self._activated_submenu.click()
@@ -236,8 +239,12 @@ class Menu(AbstractMenu):
             return selected.click()
             
 
-    def scroll(self, delta: int):
-        """Update menu's selected position using the given delta and allowing circular scrolling. The menu is not graphically updated."""
+    def scroll(self, delta: int) -> int:
+        """
+        Update menu's selected position using the given delta and allowing circular scrolling.
+        The menu is not graphically updated.
+        This method returns the post-scroll position in the menu.
+        """
         # Exec submenu if open
         if (self._activated_submenu != None):
             return self._activated_submenu.scroll(delta)

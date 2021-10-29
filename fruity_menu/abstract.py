@@ -9,7 +9,7 @@ class AbstractMenu:
     _width: int = 128
     """The width in pixels of the constructed menus"""
 
-    def click(self):
+    def click(self) -> bool:
         """Clicks the currently selected item and returns whether this menu is still open (True) or close (False)"""
         pass
 
@@ -34,6 +34,6 @@ class AbstractMenuOption:
         """Creates a menu option with the given string"""
         self.text = text
 
-    def click(self):
+    def click(self) -> bool:
         """Interacts with the option"""
         pass
