@@ -155,7 +155,68 @@ class MenuOptionTests(unittest.TestCase):
         m = Menu(get_mock_display(), HEIGHT, WIDTH)
         mock_submenu = Mock(AdjustMenu('', HEIGHT, WIDTH), get_displayio_group=TRUE_ACTION)
         m._activated_submenu = mock_submenu
-        self.assertEqual(True, m.show_menu(), )
+        self.assertEqual(True, m.show_menu(), 'Show_menu() did not return the displayio group it used')
+
+    def test_click_clicksSubmenu(self):
+        planted_return_value = True
+        m = Menu(get_mock_display(), HEIGHT, WIDTH)
+        submenu = Menu(get_mock_display(), HEIGHT, WIDTH)
+        submenu.click = Mock(return_value=planted_return_value)
+        m._activated_submenu = submenu
+        is_open = m.click()
+        
+        self.assertEqual(planted_return_value, is_open)
+        submenu.click.assert_called_once()
+
+    def test_click_hasAdjustMenu(self):
+        m = Menu(get_mock_display(), HEIGHT, WIDTH)
+        adjust_submenu = AdjustMenu('label', HEIGHT, WIDTH)
+        adjust_submenu.click = Mock(adjust_submenu.click)
+        m._activated_submenu = adjust_submenu
+        is_open  = m.click()
+
+        self.assertTrue(is_open, 'The AdjustMenu did not return True as was expected')
+        adjust_submenu.click.assert_called_once()
+
+    def test_click_hasAdjustMenu_noInvokeSubClosing(self):
+        planted_value = False
+        m = Menu(get_mock_display(), HEIGHT, WIDTH)
+        adjust_submenu = AdjustMenu('label', HEIGHT, WIDTH)
+        adjust_submenu.click = Mock(adjust_submenu.click, return_value=planted_value)
+        m._submenu_is_closing = Mock()
+        m._activated_submenu = adjust_submenu
+        m.click()
+        
+        m._submenu_is_closing.assert_called_once()
+
+    def test_click_clicksSelectedOption(self):
+        m = Menu(get_mock_display(), HEIGHT, WIDTH)
+        selection = 1
+        trap_mock = Mock(m)
+        trap_mock.click = Mock(side_effect=TRAP_ACTION)
+        good_mock = Mock(m)
+        good_mock.click = Mock()
+
+        m._options = [trap_mock, good_mock, trap_mock, trap_mock]
+        m._selection = selection
+
+        m.click()
+        trap_mock.click.assert_not_called()
+        good_mock.click.assert_called_once()
+
+    def test_scroll(self):
+        return_value = 369
+        m = Menu(get_mock_display(), HEIGHT, WIDTH)
+        submenu = Menu(get_mock_display(), HEIGHT, WIDTH)
+        submenu.scroll = Mock(return_value=return_value)
+        m._activated_submenu = submenu
+
+        position = m.scroll(2)
+        submenu.scroll.assert_called_once()
+        self.assertEqual(return_value, position, 'The value that the menu returned is not the one the submenu gave it')
+
+    def test_scroll_positiveDeltaScrollsDown(self):
+        m = Menu(get_mock_display(), HEIGHT, WIDTH)
 
 
 class MenuBuildingTests(unittest.TestCase):
