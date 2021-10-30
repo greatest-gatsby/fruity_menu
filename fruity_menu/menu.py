@@ -100,12 +100,12 @@ class Menu(AbstractMenu):
         menu._height = height
         return menu
 
-    def add_action_button(self, title: str, action) -> ActionButton:
+    def add_action_button(self, title: str, action, args = None) -> ActionButton:
         """
         Adds a button to this menu that invokes the given function when clicked.
         The created button is then returned.
         """
-        act = ActionButton(title, action)
+        act = ActionButton(title, action, args)
         act.upmenu = self
         self._options.append(act)
         return act
@@ -124,13 +124,13 @@ class Menu(AbstractMenu):
         self._options.append(menubut)
         return menubut
 
-    def add_value_button(self, title: str, value, on_value_set = None) -> ValueButton:
+    def add_value_button(self, title: str, value, on_value_set = None, on_set_args = None) -> ValueButton:
         """Add a button to this menu that lets users modify the value of the given variable"""
         
         if isinstance(value, bool):
-            submenu = BoolMenu(value, title, self._height, self._width, value_set=on_value_set)
+            submenu = BoolMenu(value, title, self._height, self._width, value_set=on_value_set, value_set_args=on_set_args)
         elif isinstance(value, int) or isinstance(value, float):
-            submenu = NumberMenu(number=value, label=title, height=self._height, width=self._width, value_set=on_value_set)
+            submenu = NumberMenu(number=value, label=title, height=self._height, width=self._width, value_set=on_value_set, value_set_args=on_set_args)
         else:
             raise NotImplementedError()
             
@@ -206,6 +206,7 @@ class Menu(AbstractMenu):
         will also display the `Group` itself.
         """
         # if no submenu is open, then show this menu
+        print('showing', self._title)
         if self._activated_submenu is None:
             grp = self.build_displayio_group()
             self._display.show(grp)

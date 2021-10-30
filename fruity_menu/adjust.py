@@ -11,12 +11,14 @@ class AdjustMenu(AbstractMenu):
     label: str = ''
     property = None
     on_value_set = None
+    on_value_set_args = None
 
-    def __init__(self, label: str, height: int, width: int, on_value_set = None):
+    def __init__(self, label: str, height: int, width: int, on_value_set = None, on_value_set_args = None):
         self.label = label
         self._width = width
         self._height = height
         self.on_value_set = on_value_set
+        self.on_value_set_args = on_value_set_args
 
     def get_display_io_group(self) -> Group:
         pass
@@ -36,12 +38,12 @@ class BoolMenu(AdjustMenu):
     text_when_true = 'True'
     text_when_false = 'False'
 
-    def __init__(self, property: bool, label: str, height: int, width: int,
-                value_set = None, text_true: str = 'True', text_false: str = 'False'):
+    def __init__(self, property: bool, label: str, height: int, width: int, value_set = None,
+                value_set_args = None, text_true: str = 'True', text_false: str = 'False'):
         self.property = property
         self.text_when_false = text_false
         self.text_when_true = text_true
-        super().__init__(label, height, width, value_set)
+        super().__init__(label, height, width, value_set, value_set_args)
 
     def get_displayio_group(self):
         grp = Group()
@@ -64,7 +66,10 @@ class BoolMenu(AdjustMenu):
 
     def click(self):
         if (self.on_value_set is not None):
-            self.on_value_set(self.property)
+            if (self.on_value_set_args is not None):
+                self.on_value_set(self.on_value_set_args, self.property)
+            else:
+                self.on_value_set(self.property)
         return False
 
     def scroll(self, delta):
@@ -74,11 +79,11 @@ class BoolMenu(AdjustMenu):
 class NumberMenu(AdjustMenu):
     scroll_factor = 1
 
-    def __init__(self, number, label: str, height: int, width: int,
-                value_set = None, scroll_mulitply_factor: int = 1):
+    def __init__(self, number, label: str, height: int, width: int, value_set = None,
+                value_set_args = None, scroll_mulitply_factor: int = 1):
         self.property = number
         self.scroll_factor = scroll_mulitply_factor
-        super().__init__(label, height, width, value_set)
+        super().__init__(label, height, width, value_set, value_set_args)
 
     def get_displayio_group(self):
         grp = Group()
@@ -94,7 +99,10 @@ class NumberMenu(AdjustMenu):
 
     def click(self):
         if (self.on_value_set is not None):
-            self.on_value_set(self.property)
+            if (self.on_value_set_args is not None):
+                self.on_value_set(self.on_value_set_args, self.property)
+            else:
+                self.on_value_set(self.property)
         return False
 
     def scroll(self, delta):

@@ -7,16 +7,22 @@ class ActionButton(AbstractMenuOption):
     For example, hooking the action to your menu's toggle function can work as an Exit button.
     """
     _action = None
+    _args = None
 
-    def __init__(self, text: str, action):
+    def __init__(self, text: str, action, args = None):
         """Creates an action button with the given title and that will execute the given action when clicked"""
         self._action = action
+        self._args = args
         super().__init__(text)
 
     def click(self):
         """Invoke this button's stored action"""
         super().click()
-        return self._action()
+        if self._args is None:
+            self._action()
+        else:
+            self._action(self._args)
+        return True
         
 
 class SubmenuButton(AbstractMenuOption):
