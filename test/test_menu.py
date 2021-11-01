@@ -4,14 +4,14 @@ from unittest.mock import Mock
 from adafruit_displayio_sh1106 import SH1106
 from displayio import Display, Group
 
-from fruity_menu.abstract import AbstractMenuOption
-from fruity_menu.adjust import AdjustMenu
+from fruity_menu.abstract import AbstractMenu, AbstractMenuOption
+from fruity_menu.adjust import DISPLAY, AdjustMenu
 from fruity_menu.options import ActionButton, SubmenuButton, ValueButton
 from fruity_menu.menu import Menu, OPT_BACK_COLOR, OPT_HIGHLIGHT_BACK_COLOR, OPT_HIGHLIGHT_TEXT_COLOR, OPT_TEXT_COLOR
 
-DISPLAY = SH1106
-WIDTH = 128
 HEIGHT = 64
+WIDTH = 128
+DISPLAY = SH1106
 
 def get_mock_display():
     return Mock(Display(None, [], width=WIDTH, height=HEIGHT))
@@ -34,13 +34,13 @@ def TRUE_ACTION():
 
 class MenuTests(unittest.TestCase):
     def test_constructor_requiresDisplay(self):
-        menu = Menu(DISPLAY, HEIGHT, WIDTH)
+        menu = Menu(get_mock_display(), HEIGHT, WIDTH)
 
 class MenuOptionTests(unittest.TestCase):
     menu = None
 
     def setUp(self):
-        self.menu = Menu.without_display(WIDTH, HEIGHT)
+        self.menu = Menu(get_mock_display(), WIDTH, HEIGHT)
 
     def test_menu_constructor_setsFields(self):
         menu_title = 'This is a title'
@@ -142,85 +142,137 @@ class MenuOptionTests(unittest.TestCase):
         self.assertEqual(btn_text, exit_btn.text, 'Added button text does not match expected')
 
     def test_showMenu_hasSubmenu(self):
-        m = Menu(get_mock_display(), HEIGHT, WIDTH)
         mock_submenu = Menu(get_mock_display(), HEIGHT, WIDTH)
-        m._activated_submenu = mock_submenu
-        self.assertTrue(isinstance(m.show_menu(), Group), 'Show_menu() did not return the displayio group it used')
+        self.menu._activated_submenu = mock_submenu
+        self.assertTrue(isinstance(self.menu.show_menu(), Group), 'Show_menu() did not return the displayio group it used')
 
     def test_showMenu_noSubmenu(self):
-        m = Menu(get_mock_display(), HEIGHT, WIDTH)
-        self.assertTrue(isinstance(m.show_menu(), Group), 'Show_menu() did not return the displayio group it used')
+        self.assertTrue(isinstance(self.menu.show_menu(), Group), 'Show_menu() did not return the displayio group it used')
 
     def test_showMenu_hasAdjustMenu(self):
-        m = Menu(get_mock_display(), HEIGHT, WIDTH)
         mock_submenu = Mock(AdjustMenu('', HEIGHT, WIDTH), get_displayio_group=TRUE_ACTION)
-        m._activated_submenu = mock_submenu
-        self.assertEqual(True, m.show_menu(), 'Show_menu() did not return the displayio group it used')
+        self.menu._activated_submenu = mock_submenu
+        self.assertEqual(True, self.menu.show_menu(), 'Show_menu() did not return the displayio group it used')
 
     def test_click_clicksSubmenu(self):
         planted_return_value = True
-        m = Menu(get_mock_display(), HEIGHT, WIDTH)
         submenu = Menu(get_mock_display(), HEIGHT, WIDTH)
         submenu.click = Mock(return_value=planted_return_value)
-        m._activated_submenu = submenu
-        is_open = m.click()
+        self.menu._activated_submenu = submenu
+        is_open = self.menu.click()
         
         self.assertEqual(planted_return_value, is_open)
         submenu.click.assert_called_once()
 
     def test_click_hasAdjustMenu(self):
-        m = Menu(get_mock_display(), HEIGHT, WIDTH)
         adjust_submenu = AdjustMenu('label', HEIGHT, WIDTH)
         adjust_submenu.click = Mock(adjust_submenu.click)
-        m._activated_submenu = adjust_submenu
-        is_open  = m.click()
+        self.menu._activated_submenu = adjust_submenu
+        is_open  = self.menu.click()
 
         self.assertTrue(is_open, 'The AdjustMenu did not return True as was expected')
         adjust_submenu.click.assert_called_once()
 
     def test_click_hasAdjustMenu_noInvokeSubClosing(self):
         planted_value = False
-        m = Menu(get_mock_display(), HEIGHT, WIDTH)
         adjust_submenu = AdjustMenu('label', HEIGHT, WIDTH)
         adjust_submenu.click = Mock(adjust_submenu.click, return_value=planted_value)
-        m._submenu_is_closing = Mock()
-        m._activated_submenu = adjust_submenu
-        m.click()
+        self.menu._submenu_is_closing = Mock()
+        self.menu._activated_submenu = adjust_submenu
+        self.menu.click()
         
-        m._submenu_is_closing.assert_called_once()
+        self.menu._submenu_is_closing.assert_called_once()
 
     def test_click_clicksSelectedOption(self):
-        m = Menu(get_mock_display(), HEIGHT, WIDTH)
         selection = 1
-        trap_mock = Mock(m)
+        trap_mock = Mock(self.menu)
         trap_mock.click = Mock(side_effect=TRAP_ACTION)
-        good_mock = Mock(m)
+        good_mock = Mock(self.menu)
         good_mock.click = Mock()
 
-        m._options = [trap_mock, good_mock, trap_mock, trap_mock]
-        m._selection = selection
+        self.menu._options = [trap_mock, good_mock, trap_mock, trap_mock]
+        self.menu._selection = selection
 
-        m.click()
+        self.menu.click()
         trap_mock.click.assert_not_called()
         good_mock.click.assert_called_once()
 
     def test_scroll(self):
         return_value = 369
-        m = Menu(get_mock_display(), HEIGHT, WIDTH)
         submenu = Menu(get_mock_display(), HEIGHT, WIDTH)
         submenu.scroll = Mock(return_value=return_value)
-        m._activated_submenu = submenu
+        self.menu._activated_submenu = submenu
 
-        position = m.scroll(2)
+        position = self.menu.scroll(2)
         submenu.scroll.assert_called_once()
         self.assertEqual(return_value, position, 'The value that the menu returned is not the one the submenu gave it')
 
-    def test_scroll_positiveDeltaScrollsDown(self):
-        m = Menu(get_mock_display(), HEIGHT, WIDTH)
+    def test_scroll_positiveDeltaIncrementsPosition(self):
+        self.menu._selection = 0
+        result = self.menu.scroll(44)
+        self.assertEqual(result, self.menu._selection, 'Scroll did not return the same position it set in its menu')
+        self.assertEqual(1, result, 'Post-scroll position should have been incremented by 1')
+
+    def test_scroll_positiveDeltaOverscrollsToTop(self):
+        self.menu._selection = 2
+        self.menu._options = ['my length', 'is', 3]
+        result = self.menu.scroll(31)
+        self.assertEqual(result, self.menu._selection, 'Scroll did not return the same position it set in its menu')
+        self.assertEqual(0, result, 'Menu did not scroll back to the first (0th) item')
+
+    def test_scroll_negativeDeltaDecrementsPosition(self):
+        self.menu._selection = 2
+        self.menu._options = ['my length', 'is', 3]
+        result = self.menu.scroll(-12)
+        self.assertEqual(result, self.menu._selection, 'Scroll did not return the same position it set in its menu')
+        self.assertEqual(1, result, 'Post-scroll position should have been decremented by 1')
+
+    def test_scroll_negativeDeltaUnderscrollsToBottom(self):
+        self.menu._selection = 0
+        self.menu._options = ['my length', 'is', 3]
+        result = self.menu.scroll(-1)
+        self.assertEqual(result, self.menu._selection, 'Scroll did not return the same position it set in its menu')
+        self.assertEqual(2, result, 'Menu did not scroll back to the last item')
+
+    def test_scroll_zeroDeltaNoChange(self):
+        self.menu._selection = 1
+        self.menu._options = ['my length', 'is', 3]
+        result = self.menu.scroll(0)
+        self.assertEqual(result, self.menu._selection, 'Scroll did not return the same position it set in its menu')
+        self.assertEqual(1, result, 'Menu scrolled with a delta of zero!')
+
+    def test_submenuClosing_usesScrollOption(self):
+        self.menu._selection = 1
+        self.menu.show_menu = Mock()
+        self.menu._submenu_is_closing()
+        self.assertEqual(0, self.menu._selection, 'Menu should have scrolled to the top after closing submenu')
+        self.menu.show_menu.assert_called_once()
+
+    def test_submenuClosing_noScroll(self):
+        self.menu._selection = 1
+        self.menu.show_menu = Mock()
+        self.menu._scroll_after_submenu = False
+        self.menu._submenu_is_closing()
+        self.assertEqual(1, self.menu._selection, 'Menu should not have scrolled after closing submenu')
+        self.menu.show_menu.assert_called_once()
+
+    def test_submenuOpening_notAdjustMenu(self):
+        self.menu.show_menu = Mock()
+        submenu = AbstractMenu()
+
+        self.menu._submenu_is_opening(submenu)
+        self.menu.show_menu.assert_not_called()
+    
+    def test_submenuOpening_adjustMenu(self):
+        self.menu.show_menu = Mock()
+        submenu = AdjustMenu('', HEIGHT, WIDTH)
+
+        self.menu._submenu_is_opening(submenu)
+        self.menu.show_menu.assert_called_once_with()
 
 
 class MenuBuildingTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self):        
         pass
 
     def test_buildGroup_menuWithTitle(self):

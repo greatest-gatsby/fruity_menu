@@ -69,6 +69,11 @@ class Menu(AbstractMenu):
     Whether to show Title at the top of the menu
     """
 
+    _scroll_after_submenu: bool = True
+    """
+    Whether to scroll to the first item in the menu after closing a submenu
+    """
+
     _x: int = 4
     """
     X-coordinate for rendering menu
@@ -269,7 +274,7 @@ class Menu(AbstractMenu):
         return self._selection
     
     def _submenu_is_closing(self):
-        if (SCROLL_UP_AFTER_EXIT_SUBMENU):
+        if (self._scroll_after_submenu):
             self._selection = 0
         self._activated_submenu = None
         self.show_menu()

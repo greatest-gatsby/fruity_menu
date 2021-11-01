@@ -1,9 +1,10 @@
 from displayio import Group
 from terminalio import FONT
 from fruity_menu.abstract import AbstractMenu
-
+from adafruit_displayio_sh1106 import SH1106
 from adafruit_display_text.label import Label
 
+DISPLAY = SH1106
 PADDING_V_PX = 1
 PADDING_H_PX = 4
 
@@ -45,7 +46,7 @@ class BoolMenu(AdjustMenu):
         self.text_when_true = text_true
         super().__init__(label, height, width, value_set, value_set_args)
 
-    def get_displayio_group(self):
+    def build_displayio_group(self):
         grp = Group()
         title_label = self.get_title_label()
         grp.append(title_label)
@@ -60,9 +61,6 @@ class BoolMenu(AdjustMenu):
         grp.append(prop_text)
 
         return grp
-
-    def get_value(self):
-        return property 
 
     def click(self):
         if (self.on_value_set is not None):
@@ -85,7 +83,7 @@ class NumberMenu(AdjustMenu):
         self.scroll_factor = scroll_mulitply_factor
         super().__init__(label, height, width, value_set, value_set_args)
 
-    def get_displayio_group(self):
+    def build_displayio_group(self):
         grp = Group()
         title_label = self.get_title_label()
         grp.append(title_label)
