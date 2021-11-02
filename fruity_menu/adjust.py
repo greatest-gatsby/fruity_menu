@@ -36,17 +36,24 @@ class AdjustMenu(AbstractMenu):
 
 
 class BoolMenu(AdjustMenu):
+    """Menu for adjusting the value of a Boolean variable"""
+
     text_when_true = 'True'
+    """Text to display when the target variable is True"""
+
     text_when_false = 'False'
+    """Text to display when the target variable is False"""
 
     def __init__(self, property: bool, label: str, height: int, width: int, value_set = None,
                 value_set_args = None, text_true: str = 'True', text_false: str = 'False'):
+        """Instantiates a menu to adjust the value of a Boolean variable"""
         self.property = property
         self.text_when_false = text_false
         self.text_when_true = text_true
         super().__init__(label, height, width, value_set, value_set_args)
 
     def build_displayio_group(self):
+        """Builds a `displayio.Group` that represents this menu's current state"""
         grp = Group()
         title_label = self.get_title_label()
         grp.append(title_label)
@@ -63,6 +70,7 @@ class BoolMenu(AdjustMenu):
         return grp
 
     def click(self):
+        """Invokes the menu's stored action, if any, and returns False."""
         if (self.on_value_set is not None):
             if (self.on_value_set_args is not None):
                 self.on_value_set(self.on_value_set_args, self.property)
@@ -70,20 +78,26 @@ class BoolMenu(AdjustMenu):
                 self.on_value_set(self.property)
         return False
 
-    def scroll(self, delta):
+    def scroll(self, delta: int):
+        """Inverts the stored Boolean variable if the given delta is an odd number"""
         if delta % 2 == 1:
             self.property = not self.property
     
 class NumberMenu(AdjustMenu):
+    """Menu for adjusting the value of a numeric variable"""
+
     scroll_factor = 1
+    """Multiplies the scroll delta by this number to determine how much to adjust the numeric variable"""
 
     def __init__(self, number, label: str, height: int, width: int, value_set = None,
                 value_set_args = None, scroll_mulitply_factor: int = 1):
+        """Instantiates a menu to adjust the value of a numeric variable"""
         self.property = number
         self.scroll_factor = scroll_mulitply_factor
         super().__init__(label, height, width, value_set, value_set_args)
 
     def build_displayio_group(self):
+        """Builds a `displayio.Group` that represents this menu's current state"""
         grp = Group()
         title_label = self.get_title_label()
         grp.append(title_label)
@@ -96,6 +110,7 @@ class NumberMenu(AdjustMenu):
         return grp
 
     def click(self):
+        """Invokes the menu's stored action, if any, and returns False"""
         if (self.on_value_set is not None):
             if (self.on_value_set_args is not None):
                 self.on_value_set(self.on_value_set_args, self.property)
@@ -103,5 +118,6 @@ class NumberMenu(AdjustMenu):
                 self.on_value_set(self.property)
         return False
 
-    def scroll(self, delta):
+    def scroll(self, delta: int):
+        """Increments the stored numeric variable by the delta multiplied by the scrolling factor."""
         self.property = self.property + (self.scroll_factor * delta)

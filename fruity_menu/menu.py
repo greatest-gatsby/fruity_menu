@@ -284,3 +284,10 @@ class Menu(AbstractMenu):
 
         if (isinstance(self._activated_submenu, AdjustMenu)):
             self.show_menu()
+
+    def create_menu(self, title: str = 'Menu'):
+        """
+        Create a new Menu object using this menu's properties, with an optional new title.
+        This menu won't 'register' the newly created menu, just instantiate and return it.
+        """
+        return Menu(self._display, self._height, self._width, show_menu_title=self._show_title, title=title)

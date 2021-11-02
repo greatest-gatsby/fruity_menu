@@ -270,6 +270,14 @@ class MenuOptionTests(unittest.TestCase):
         self.menu._submenu_is_opening(submenu)
         self.menu.show_menu.assert_called_once_with()
 
+    def test_createMenu_matchesProperties(self):
+        newMenu = self.menu.create_menu('New menu')
+        self.assertEqual(self.menu._display, newMenu._display, 'The new menu was created with a different Display object')
+        self.assertEqual(self.menu._height, newMenu._height, 'The new menu was created with a different height')
+        self.assertEqual(self.menu._width, newMenu._width, 'The new menu was created with a different width')
+        self.assertEqual(self.menu._show_title, newMenu._show_title, 'The new menu was created with a different ShowHeight setting')
+        self.assertEqual('New menu', newMenu._title, 'The new menu was not created with the given title string')
+
 
 class MenuBuildingTests(unittest.TestCase):
     def setUp(self):        
