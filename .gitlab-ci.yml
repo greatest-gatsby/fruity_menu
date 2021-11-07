@@ -24,12 +24,11 @@ image: python:latest
 
 before_script:
     - python -V  # Print out python version for debugging
-    - pip install virtualenv
-    - python -m venv venv
+    - python -m venv env
 
 test:
     script:
-        - venv/Scripts/activate
+        - env/Scripts/activate
         - pip install -r requirements.txt
         - coverage run -m unittest discover
         - coverage xml
