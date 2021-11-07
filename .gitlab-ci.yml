@@ -33,6 +33,6 @@ test:
         - pip install -r requirements.txt
         - coverage run -m unittest discover
         - coverage xml
-    artifacts:
-        reports:
-            cobertura: coverage.xml
+#    artifacts:
+#        reports:
+#            cobertura: coverage.xml
