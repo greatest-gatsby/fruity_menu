@@ -29,6 +29,8 @@ before_script:
 
 test:
     script:
+        - ls venv
+        - ls venv/Scripts
         - venv/Scripts/activate
         - pip install -r requirements.txt
         - coverage run -m unittest discover
