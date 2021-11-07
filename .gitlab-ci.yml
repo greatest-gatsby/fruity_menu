@@ -31,8 +31,8 @@ before_script:
 test:
     script:
         - pip install -r requirements.txt
-        - coverage run -m unittest discover
-        - coverage xml
+        - python -m coverage run -m unittest discover
+        - python -m coverage xml
 #    artifacts:
 #        reports:
 #            cobertura: coverage.xml
