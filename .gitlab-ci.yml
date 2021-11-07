@@ -25,6 +25,7 @@ image: python:latest
 before_script:
     - python -V  # Print out python version for debugging
     - python -m venv env
+    - chmod +x env/bin/activate
 
 test:
     script:
