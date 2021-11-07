@@ -34,6 +34,6 @@ test:
     script:
         - python -m coverage run -m unittest discover
         - python -m coverage xml
-#    artifacts:
-#        reports:
-#            cobertura: coverage.xml
+    artifacts:
+        reports:
+            cobertura: coverage.xml
