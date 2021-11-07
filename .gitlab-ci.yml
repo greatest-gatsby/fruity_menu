@@ -25,6 +25,8 @@ image: python:latest
 before_script:
     - python -V  # Print out python version for debugging
     - python -m venv env
+    - ls
+    - ls env
 
 test:
     script:
