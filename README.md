@@ -1,5 +1,6 @@
 # Fruity Menu
 [![pipeline status](https://git.therode.net/jrode/fruity_menu/badges/main/pipeline.svg)](https://git.therode.net/jrode/fruity_menu/-/commits/main)
+[![coverage report](https://git.therode.net/jrode/fruity_menu/badges/main/coverage.svg)](https://git.therode.net/jrode/fruity_menu/-/commits/main)
 
 
 Build a simple UI in CircuitPython. Designed for the Adafruit RP2040 Macropad, but usable with any `displayio.Display`.
