@@ -10,3 +10,7 @@ htmlcov/
 .vscode/
 
 coverage.xml
+
+dist/
+
+fruity_display_menu.egg-info/
