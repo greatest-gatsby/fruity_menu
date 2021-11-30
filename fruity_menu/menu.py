@@ -129,13 +129,13 @@ class Menu(AbstractMenu):
         self._options.append(menubut)
         return menubut
 
-    def add_value_button(self, title: str, value, on_value_set = None, on_set_args = None) -> ValueButton:
+    def add_value_button(self, title: str, value, on_value_set = None, on_set_args = None, scroll_factor = 1) -> ValueButton:
         """Add a button to this menu that lets users modify the value of the given variable"""
         
         if isinstance(value, bool):
             submenu = BoolMenu(value, title, self._height, self._width, value_set=on_value_set, value_set_args=on_set_args)
         elif isinstance(value, int) or isinstance(value, float):
-            submenu = NumberMenu(number=value, label=title, height=self._height, width=self._width, value_set=on_value_set, value_set_args=on_set_args)
+            submenu = NumberMenu(number=value, label=title, height=self._height, width=self._width, value_set=on_value_set, value_set_args=on_set_args, scroll_mulitply_factor=scroll_factor)
         else:
             raise NotImplementedError()
             

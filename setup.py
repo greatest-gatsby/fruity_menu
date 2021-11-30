@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as rm:
 
 setup(
     name='fruity_display_menu',
-    version='1.0.0',    
+    version='1.0.1',    
     description='Simple menu library for CircuitPython devices, designed for Adafruit RP2040 macropad.',
     long_description_content_type='text/markdown',
     long_description=readme,
