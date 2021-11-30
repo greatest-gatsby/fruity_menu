@@ -12,6 +12,10 @@ class NumberMenuTests(unittest.TestCase):
     def setUp(self) -> None:
         self.n_menu = NumberMenu(self.value, self.title, HEIGHT, WIDTH)
         return super().setUp()
+    
+    def test_constructor_throwsIfBadMinMax(self):
+        with self.assertRaises(ValueError):
+            nummenu = NumberMenu(self.value, self.title, HEIGHT, WIDTH, min_value=10, max_value=5)
 
     def test_getDisplayIoGroup(self):
         grp = self.n_menu.build_displayio_group()
@@ -44,5 +48,19 @@ class NumberMenuTests(unittest.TestCase):
         self.n_menu.scroll_factor = scroll_factor
         self.n_menu.scroll(scroll_delta)
         self.assertEqual((scroll_delta * scroll_factor) + starting, self.n_menu.property)
-
-    
+        
+    def test_scroll_respectsMaximum(self):
+        scroll_delta = 5
+        starting = 8
+        max = 10
+        num_menu = NumberMenu(starting, self.title, HEIGHT, WIDTH, max_value=max)
+        num_menu.scroll(scroll_delta)
+        self.assertEqual(max, num_menu.property)
+        
+    def test_scroll_respectsMinimum(self):
+        scroll_delta = -15
+        starting = 3
+        min = 0
+        num_menu = NumberMenu(starting, self.title, HEIGHT, WIDTH, min_value=min)
+        num_menu.scroll(scroll_delta)
+        self.assertEqual(min, num_menu.property)

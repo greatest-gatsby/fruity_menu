@@ -88,12 +88,22 @@ class NumberMenu(AdjustMenu):
 
     scroll_factor = 1
     """Multiplies the scroll delta by this number to determine how much to adjust the numeric variable"""
+    
+    min = None
+    """Minimum allowed value"""
+    
+    max = None
+    """Max allowed value"""
 
     def __init__(self, number, label: str, height: int, width: int, value_set = None,
-                value_set_args = None, scroll_mulitply_factor: int = 1):
+                value_set_args = None, scroll_mulitply_factor: int = 1, min_value = None, max_value = None):
         """Instantiates a menu to adjust the value of a numeric variable"""
         self.property = number
         self.scroll_factor = scroll_mulitply_factor
+        self.min = min_value
+        self.max = max_value
+        if (self.min is not None and self.max is not None and self.min > self.max):
+            raise ValueError('Minimum allowed value is higher than the maximum allowed')
         super().__init__(label, height, width, value_set, value_set_args)
 
     def build_displayio_group(self):
@@ -120,4 +130,10 @@ class NumberMenu(AdjustMenu):
 
     def scroll(self, delta: int):
         """Increments the stored numeric variable by the delta multiplied by the scrolling factor."""
-        self.property = self.property + (self.scroll_factor * delta)
+        post_scroll_value = self.property + (self.scroll_factor * delta)
+        if (self.min is not None and post_scroll_value < self.min):
+            self.property = self.min
+        elif (self.max is not None and post_scroll_value > self.max):
+            self.property = self.max
+        else:
+            self.property = post_scroll_value
