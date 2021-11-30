@@ -150,7 +150,7 @@ class MenuOptionTests(unittest.TestCase):
         self.assertTrue(isinstance(self.menu.show_menu(), Group), 'Show_menu() did not return the displayio group it used')
 
     def test_showMenu_hasAdjustMenu(self):
-        mock_submenu = Mock(AdjustMenu('', HEIGHT, WIDTH), get_displayio_group=TRUE_ACTION)
+        mock_submenu = Mock(AdjustMenu('', HEIGHT, WIDTH), build_displayio_group=TRUE_ACTION)
         self.menu._activated_submenu = mock_submenu
         self.assertEqual(True, self.menu.show_menu(), 'Show_menu() did not return the displayio group it used')
 
