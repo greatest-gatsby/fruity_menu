@@ -1,12 +1,12 @@
 from os import read
 from setuptools import setup
-
+from fruity_menu import __version__
 with open("README.md", "r", encoding="utf-8") as rm:
     readme = rm.read()
 
 setup(
     name='fruity_display_menu',
-    version='1.0.1',    
+    version=__version__,
     description='Simple menu library for CircuitPython devices, designed for Adafruit RP2040 macropad.',
     long_description_content_type='text/markdown',
     long_description=readme,
