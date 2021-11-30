@@ -223,7 +223,7 @@ class Menu(AbstractMenu):
             # if submenu active, then render that submenu
             # main and submenus can show themselves, but adjustmenus have to *be* shown
             if (isinstance(self._activated_submenu, AdjustMenu)):
-                grp = self._activated_submenu.get_displayio_group()
+                grp = self._activated_submenu.build_displayio_group()
                 self._display.show(grp)
                 return grp
             else:
