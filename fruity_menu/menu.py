@@ -226,7 +226,6 @@ class Menu(AbstractMenu):
             grp = self.build_displayio_group()
             self._display.show(grp)
             self._is_active = True
-            self.screenshot(self._title)
             return grp
         else:
             # if submenu active, then render that submenu
@@ -234,7 +233,6 @@ class Menu(AbstractMenu):
             if (isinstance(self._activated_submenu, AdjustMenu)):
                 grp = self._activated_submenu.build_displayio_group()
                 self._display.show(grp)
-                self.screenshot(self._activated_submenu.label)
                 return grp
             else:
                 return self._activated_submenu.show_menu()
@@ -262,6 +260,7 @@ class Menu(AbstractMenu):
         else:
             # otherwise click this menu
             selected = self._options[self._selection]
+            self.screenshot(self._title)
             return selected.click()
             
 
