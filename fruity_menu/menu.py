@@ -1,7 +1,9 @@
 from math import ceil, floor
 from displayio import Display, Group
 import terminalio
+from time import time
 from adafruit_display_text.label import Label
+from adafruit_bitmapsaver import save_pixels
 
 from fruity_menu.adjust import AdjustMenu, BoolMenu, NumberMenu
 from fruity_menu.abstract import AbstractMenu
@@ -82,6 +84,12 @@ class Menu(AbstractMenu):
     _y: int = 0
     """
     Y-coordinate for rendering menu
+    """
+    
+    _save_debug_screenshots: bool = False
+    """
+    If True, then a screenshot will be saved every time the menu is redrawn.
+    This will seriously slow down the device and may quickly fill it up--use at your own risk!
     """
 
     def __init__(self, display: Display, height, width, show_menu_title = True, title: str = 'Menu'):
@@ -218,6 +226,7 @@ class Menu(AbstractMenu):
             grp = self.build_displayio_group()
             self._display.show(grp)
             self._is_active = True
+            self.screenshot(self._title)
             return grp
         else:
             # if submenu active, then render that submenu
@@ -225,9 +234,18 @@ class Menu(AbstractMenu):
             if (isinstance(self._activated_submenu, AdjustMenu)):
                 grp = self._activated_submenu.build_displayio_group()
                 self._display.show(grp)
+                self.screenshot(self._activated_submenu.label)
                 return grp
             else:
                 return self._activated_submenu.show_menu()
+            
+    def screenshot(self, hint: str) -> None:
+        """IF this menu has screenshots enables, this function takes a screenshot and saves it."""
+        if not self._save_debug_screenshots:
+            return
+        
+        name = hint + '-' + str(time())
+        save_pixels(name, self._display)
 
     def click(self) -> bool:
         """Clicks the currently selected item and returns whether this menu is still open (True) or closed (False)"""
