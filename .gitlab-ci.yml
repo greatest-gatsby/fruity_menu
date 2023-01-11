@@ -27,6 +27,7 @@ before_script:
     - python -m venv env
     - chmod +x env/bin/activate
     - source env/bin/activate
+    - pip install RPi.GPIO
     - pip install -r requirements.txt
     - pip install coverage
 
@@ -41,10 +42,8 @@ test:
                 coverage_format: cobertura
                 path: coverage.xml
 
-
-
-
 package:
+    stage: deploy
     when: manual
     script:
         - pip install build twine
