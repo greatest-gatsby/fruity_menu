@@ -1,5 +1,6 @@
 from math import ceil, floor
 from displayio import Display, Group
+from os import getcwd
 import terminalio
 from time import time
 from adafruit_display_text.label import Label
@@ -244,6 +245,8 @@ class Menu(AbstractMenu):
         
         name = hint + '-' + str(time())
         save_pixels(name, self._display)
+        print('Saving screenshot to', name)
+        print('CWD:', getcwd())
 
     def click(self) -> bool:
         """Clicks the currently selected item and returns whether this menu is still open (True) or closed (False)"""
