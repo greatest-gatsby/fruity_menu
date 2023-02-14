@@ -79,3 +79,32 @@ while True:
     if enter_button.pressed:
         menu.click()
 ```
+
+## User-adjustable variables
+Fruity Menu provides `ValueButton`s which allow users to adjust the values of variables. By adding a `ValueButton` to a menu, Fruity Menu will construct a graphical menu for adjusting the value. Users can `scroll(delta)` up and down to adjust the value, and `click()` to "set" it.
+
+Importantly, these menus do not update the variables directly; instead, you must specify a callback when adding the button. This callback is invoked when the value is set; whatever function you set in the callback must update whatever variable you have set.
+
+For example, consider you have a class called `Television`, an instance of that class called `tv`, and you want to add a volume adjustment button to your menu called `menu`:
+
+```py
+def set_volume(new_volume):
+    tv.volume = new_volume
+
+tv.volume = 0.0
+menu.add_value_button('Volume', tv.volume, set_volume)
+```
+
+The function `set_volume(new_volume)` is supplied as a callback to `add_value_button(...)`. Once the user clicks the button and selects a new value, Fruity Menu will invoke the given function and provide the new value as its only argument. The callback is responsible for acting on the changed value.
+
+### Supported types
+-  Numbers (`int`, `float`)
+-  Boolean
+
+Numeric types can be defined with upper- and lower-bounds for acceptable values, as well as scrolling factors to control how much a single `scroll()` changes the value.
+
+```py
+menu.add_value_button('Brightness', display.brightness, update_display_brightness, scroll_factor=0.1, min_val=0.0, max_val=1.0)
+```
+
+If additional options are supplied but are not relevant (like providing `scroll_factor` for a boolean variable), then they are simply ignored. If a user attempts to `scroll(delta)` outside of the specified bounds, then the menu will limit the value to that bounds. In the above code snippet, the screen would never let the user scroll beneath 0.0 or above 1.0.v
