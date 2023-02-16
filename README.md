@@ -5,6 +5,9 @@
 
 Fruity Menu is a library for building simple UI menus for CircuitPython-powered devices.
 
+![Menu example](/examples/adafruit-macropad/macropad-set.png "Macropad menu")\
+*Above:* Menus contain scrollable items, nestable submenus, and user-adjustable variables.
+
 ### Features
 -  Automatic pagination
 -  Submenus w/ configurable 'Back' buttons
@@ -29,14 +32,16 @@ menu.add_action_button('Shut down', action=microcontroller.reset)
 sub_settings = menu.create_menu('Settings')
 sub_settings.add_value_button('Screen brightness', screen.brightness, update_screen_brightness)
 menu.add_submenu_button('Open Settings...', sub_settings)
+
+menu.show_menu()
 ```
 
-In the above menu, clicking 'Shut down' would invoke the CPython `reset()` function. Clicking 'Screen brightness' would open a screen for adjusting the value of `screen.brightness` and, once set, would invoke the function `update_screen_brightness` with the updated value. Note that the specified callback is responsible for "setting" the new value; the adjust menu only provides an interface for users to select a new value but does not itself update the named variable.
+In the above menu, clicking 'Shut down' would invoke the CPython `reset()` function. Clicking 'Screen brightness' would open a screen for adjusting the value of `screen.brightness` and, once set, would invoke the function `update_screen_brightness` with the updated value. Note that the specified callback is responsible for "setting" the new value; the adjust menu only provides an interface for users to select a new value but does not itself update the named variable. Finally, the call to `show_menu()` tells the Fruity Menu to render itself to the screen.
 
 ## Supplying inputs
 Fruity Menus are navigated using `Menu.scroll(delta)` and `Menu.click()`. When scrolling, `delta` is the number of menu items to advance; a negative `delta` scrolls the other way.
 
-Your code has to tell the top-level `Menu` when clicks and scrolls occur. Fruity Menu propagates these inputs down to whatever submenu or button may be open/selected and takes the corresponding action, including redrawing the screen. For most uses, you will want to check for your inputs every tick and invoke `Menu` functions as needed:
+Your code has to tell the **top-level** `Menu` when clicks and scrolls occur. Fruity Menu propagates these inputs down to whatever submenu or button may be open/selected and takes the corresponding action, including redrawing the screen. For most uses, you will want to check for your inputs every tick and invoke `Menu` functions as needed:
 
 ```py
 enter_button = Button(...)
@@ -80,6 +85,53 @@ while True:
         menu.click()
 ```
 
+## When to render
+For the most part, Fruity Menu handles calls to render to the screen. For example, `click()` and `scroll(delta)` both ensure that the screen is rendered after navigating. You only need to invoke `show_menu()` when the screen wasn't already showing Fruity Menu and you want to begin showing it. This means you can use the whole screen for your application and then only open the menu when the user provides the necessary input, like clicking a button.
+
+To best manage other applications using the same display, add an `ActionButton` to the top-level menu. For the callback, specify a function that will render your application to the screen. You will also need to track which application is "open" and route your inputs to the appropriate app.
+
+For example, consider an application named `WeatherMonitor` that has:
+- A function called `enter()` which is used to control which category of weather data it shows to the screen
+- A function called `display()` which renders the selected data to the screen
+
+```py
+enter_btn: Button(...)
+monitor: WeatherMonitor = WeatherMonitor()
+menu: Menu = Menu(...)
+menu.add_action_button('Close', monitor.display)
+
+monitor.display()
+
+is_in_menu: bool = False
+
+while True:
+    if enter_btn.pressed:
+        if is_in_menu:
+            menu.clicked()
+        else:
+            monitor.enter()
+```
+
+If the user clicks the `enter_btn` then the menu will be clicked if it is open; otherwise the `WeatherMonitor` will be clicked. Your application will need some mechanism of communicating its intent to open the menu by invoking `menu.show_menu()`. For example, you could add a dedicated `Button` whose only action is to toggle whether the menu is open:
+
+```py
+menu_btn: Button = Button(...)
+monitor: WeatherMonitor()
+menu: Menu = Menu(...)
+
+is_in_menu: bool = False
+
+while True:
+    if menu_btn.pressed:
+        is_in_menu = not is_in_menu
+        if is_in_menu:
+            menu.show_menu()
+        else:
+            monitor.display()
+```
+
+Here, the `WeatherMonitor` will "own" the screen until the menu is told to "take over".
+
 ## User-adjustable variables
 Fruity Menu provides `ValueButton`s which allow users to adjust the values of variables. By adding a `ValueButton` to a menu, Fruity Menu will construct a graphical menu for adjusting the value. Users can `scroll(delta)` up and down to adjust the value, and `click()` to "set" it.
 
@@ -108,3 +160,8 @@ menu.add_value_button('Brightness', display.brightness, update_display_brightnes
 ```
 
 If additional options are supplied but are not relevant (like providing `scroll_factor` for a boolean variable), then they are simply ignored. If a user attempts to `scroll(delta)` outside of the specified bounds, then the menu will limit the value to that bounds. In the above code snippet, the screen would never let the user scroll beneath 0.0 or above 1.0.v
+
+## Integrating with your screen-enabled application
+Fruity Menu does not "hog" the display and can therefore be combined with other applications to make full use of a screen. The key to integrating an application with Fruity Menu is controlling *who* renders to the screen and *when*.
+
+For example, Fruity Menu was designed for the Adafruit RP2040 MacroPad. The "primary" application of the MacroPad was to execute hotkeys/keypress macros over USB. Fruity Menu provided an interface for users to configure their MacroPad.
