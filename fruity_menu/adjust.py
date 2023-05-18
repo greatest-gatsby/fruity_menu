@@ -1,3 +1,8 @@
+try:
+    from typing import List, Optional
+except ImportError:
+    pass
+
 from displayio import Group
 from terminalio import FONT
 from fruity_menu.abstract import AbstractMenu
@@ -137,3 +142,59 @@ class NumberMenu(AdjustMenu):
             self.property = self.max
         else:
             self.property = post_scroll_value
+
+
+class ArrayMenu(AdjustMenu):
+    """Menu for adjusting the value of a numeric variable"""
+
+    options: List
+    """List of suitable values"""
+    option_labels: Optional[List]
+    """Labels for values"""
+
+    def __init__(self, value, options: List, label: str, height: int, width: int,
+                 option_labels: Optional[List]=None, value_set=None, value_set_args=None):
+        """Instantiates a menu to adjust the value of a numeric variable"""
+        self.options = options
+        try:
+            self.index = self.options.index(value)
+        except ValueError:
+            raise ValueError("Value must be present in options")
+        self.option_labels = option_labels
+        if self.option_labels is not None:
+            if len(self.option_labels) != len(self.options):
+                raise ValueError("options and value_labels must be the same length")
+        super().__init__(label, height, width, value_set, value_set_args)
+
+    @property
+    def property(self):
+        return self.options[self.index]
+
+    def build_displayio_group(self):
+        """Builds a `displayio.Group` that represents this menu's current state"""
+        grp = Group()
+        title_label = self.get_title_label()
+        grp.append(title_label)
+
+        prop_text = Label(FONT)
+        if self.option_labels is not None:
+            prop_text.text = str(self.option_labels[self.index])
+        else:
+            prop_text.text = str(self.property)
+        prop_text.anchor_point = (0.5, 0.5)
+        prop_text.anchored_position = (self._width / 2, self._height / 2)
+        grp.append(prop_text)
+        return grp
+
+    def click(self):
+        """Invokes the menu's stored action, if any, and returns False"""
+        if self.on_value_set is not None:
+            if self.on_value_set_args is not None:
+                self.on_value_set(self.on_value_set_args, self.property)
+            else:
+                self.on_value_set(self.property)
+        return False
+
+    def scroll(self, delta: int):
+        """Increments to the next or previous value."""
+        self.index = (self.index + delta) % len(self.options)
