@@ -1,4 +1,9 @@
 from math import ceil, floor
+try:
+    from typing import List, Optional
+except ImportError:
+    pass
+
 from displayio import Display, Group
 from os import getcwd
 import terminalio
@@ -6,7 +11,7 @@ from time import time
 from adafruit_display_text.label import Label
 from adafruit_bitmapsaver import save_pixels
 
-from fruity_menu.adjust import AdjustMenu, BoolMenu, NumberMenu
+from fruity_menu.adjust import AdjustMenu, BoolMenu, NumberMenu, ArrayMenu
 from fruity_menu.abstract import AbstractMenu
 from fruity_menu.options import ActionButton, SubmenuButton, ValueButton
 
@@ -150,6 +155,17 @@ class Menu(AbstractMenu):
         else:
             raise NotImplementedError()
             
+        val = ValueButton(title, value, submenu, self._submenu_is_opening)
+        val.upmenu = self
+        self._options.append(val)
+        return val
+
+    def add_option_button(self, title: str, value, options: List,
+                 option_labels: Optional[List]=None, on_value_set=None, on_set_args=None):
+        submenu = ArrayMenu(value, options, title, self._height, self._width,
+                            option_labels=option_labels,
+                            value_set=on_value_set,
+                            value_set_args=on_set_args)
         val = ValueButton(title, value, submenu, self._submenu_is_opening)
         val.upmenu = self
         self._options.append(val)
