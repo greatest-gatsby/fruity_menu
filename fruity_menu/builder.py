@@ -30,8 +30,14 @@ class Options:
     """
     def __init__(self, value, options, *, option_labels = None, on_value_set=None, on_set_args=None):
         self.value = value
-        self.options = options
-        self.option_labels = option_labels
+        try:
+            dct = OrderedDict(options)
+        except ValueError:
+            self.options = options
+            self.option_labels = option_labels
+        else:
+            self.options = list(dct.values())
+            self.option_labels = list(dct.keys())
         self.on_value_set = on_value_set
         self.on_set_args = on_set_args
 
