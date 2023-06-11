@@ -52,3 +52,13 @@ class TestBuilder(TestCase):
         menu.create_menu.assert_called_once_with("sub_menu")
         sub_menu.add_action_button.assert_called_once_with("test", dummy_function)
         menu.add_submenu_button.assert_called_once_with("sub_menu", sub_menu)
+
+    def testSubMenuAddWithLists(self, Menu):
+        menu: Mock = Menu()
+        sub_menu = Mock()
+        menu.create_menu.return_value = sub_menu
+        dct = [("sub_menu", [("test", dummy_function)])]
+        build_menu(menu, dct)
+        menu.create_menu.assert_called_once_with("sub_menu")
+        sub_menu.add_action_button.assert_called_once_with("test", dummy_function)
+        menu.add_submenu_button.assert_called_once_with("sub_menu", sub_menu)
