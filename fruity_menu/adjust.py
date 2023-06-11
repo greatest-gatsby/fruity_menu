@@ -144,7 +144,7 @@ class NumberMenu(AdjustMenu):
             self.property = post_scroll_value
 
 
-class ArrayMenu(AdjustMenu):
+class OptionMenu(AdjustMenu):
     """Menu for adjusting the value of a numeric variable"""
 
     options: List
