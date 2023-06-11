@@ -36,6 +36,15 @@ class Options:
         self.on_set_args = on_set_args
 
 
+class Action:
+    """
+    This is a holder to keep the arguments to create an ActionMenu
+    """
+    def __init__(self, function, *args):
+        self.function = function
+        self.args = args
+
+
 def build_menu(menu: Menu, structure: TreeElement):
     if isinstance(structure, (list, tuple)):
         structure = OrderedDict(structure)
@@ -48,5 +57,7 @@ def build_menu(menu: Menu, structure: TreeElement):
             menu.add_value_button(k, **v.__dict__)
         elif isinstance(v, Options):
             menu.add_option_button(k, **v.__dict__)
+        elif isinstance(v, Action):
+            menu.add_action_button(k, v.function, v.args)
         elif callable(v):
             menu.add_action_button(k, v)
