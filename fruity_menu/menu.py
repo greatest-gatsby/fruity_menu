@@ -8,7 +8,7 @@ from displayio import Display, Group
 from os import getcwd
 import terminalio
 from time import time
-from adafruit_display_text.label import Label
+from adafruit_display_text.bitmap_label import Label
 from adafruit_bitmapsaver import save_pixels
 
 from fruity_menu.adjust import AdjustMenu, BoolMenu, NumberMenu, OptionMenu
@@ -197,8 +197,7 @@ class Menu(AbstractMenu):
             if (i + index_offset >= len(self._options)):
                 continue
             opt = self._options[i + index_offset]
-            lbl = Label(terminalio.FONT)
-            lbl.text = opt.text
+            lbl = Label(terminalio.FONT, text=opt.text, save_text=False)
 
             if i == selected_relative_row:
                 lbl.color = OPT_HIGHLIGHT_TEXT_COLOR
@@ -217,8 +216,7 @@ class Menu(AbstractMenu):
 
     def get_title_label(self) -> Label:
         """Gets the Label for this menu's title and adjusts the builder's coordinates to compensate for the object"""
-        lbl = Label(terminalio.FONT)
-        lbl.text = '    ' + self._title
+        lbl = Label(terminalio.FONT, text='    ' + self._title, save_text=False)
         lbl.color = OPT_HIGHLIGHT_TEXT_COLOR
         lbl.background_color = OPT_HIGHLIGHT_BACK_COLOR
         lbl.anchored_position = (0, self._y)
