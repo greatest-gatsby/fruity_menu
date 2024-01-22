@@ -205,7 +205,7 @@ class Menu(AbstractMenu):
             else:
                 lbl.color = OPT_TEXT_COLOR
                 lbl.background_color = OPT_BACK_COLOR
-            lbl.anchor_point = (0,0)
+            lbl.anchor_point = (0, 0)
             lbl.anchored_position = (self._x, self._y)
             grp.append(lbl)
 
@@ -236,10 +236,9 @@ class Menu(AbstractMenu):
         will also display the `Group` itself.
         """
         # if no submenu is open, then show this menu
-        print('showing', self._title)
         if self._activated_submenu is None:
             grp = self.build_displayio_group()
-            self._display.show(grp)
+            self._display.root_group = grp
             self._is_active = True
             return grp
         else:
@@ -247,7 +246,7 @@ class Menu(AbstractMenu):
             # main and submenus can show themselves, but adjustmenus have to *be* shown
             if (isinstance(self._activated_submenu, AdjustMenu)):
                 grp = self._activated_submenu.build_displayio_group()
-                self._display.show(grp)
+                self._display.root_group = grp
                 return grp
             else:
                 return self._activated_submenu.show_menu()
