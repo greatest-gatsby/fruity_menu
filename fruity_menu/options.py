@@ -21,7 +21,7 @@ class ActionButton(AbstractMenuOption):
         if self._args is None:
             self._action()
         else:
-            self._action(self._args)
+            self._action(*self._args)
         return True
         
 

@@ -38,6 +38,24 @@ menu.show_menu()
 
 In the above menu, clicking 'Shut down' would invoke the CPython `reset()` function. Clicking 'Screen brightness' would open a screen for adjusting the value of `screen.brightness` and, once set, would invoke the function `update_screen_brightness` with the updated value. Note that the specified callback is responsible for "setting" the new value; the adjust menu only provides an interface for users to select a new value but does not itself update the named variable. Finally, the call to `show_menu()` tells the Fruity Menu to render itself to the screen.
 
+**Using a dict to create a menu**
+You can also use a `dict` to create a menu. This can be give more readable code. The same menu as above could be created as:
+
+```py
+menu_items = {
+    'Shut down': microcontroller.reset,
+    'Settings': {
+        'Screen brightness': Value(screen.brightness, update_screen_brightness)
+    }
+}
+menu = Menu(display, title='Main Menu')
+build_menu(menu, menu_items)
+
+menu.show_menu()
+```
+Note using `Value` to provide the other arguments that would be used in `add_value_button`
+
+
 ## Supplying inputs
 Fruity Menus are navigated using `Menu.scroll(delta)` and `Menu.click()`. When scrolling, `delta` is the number of menu items to advance; a negative `delta` scrolls the other way.
 
