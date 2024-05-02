@@ -1,12 +1,17 @@
 from math import ceil, floor
+try:
+    from typing import List, Optional
+except ImportError:
+    pass
+
 from displayio import Display, Group
 from os import getcwd
 import terminalio
 from time import time
-from adafruit_display_text.label import Label
+from adafruit_display_text.bitmap_label import Label
 from adafruit_bitmapsaver import save_pixels
 
-from fruity_menu.adjust import AdjustMenu, BoolMenu, NumberMenu
+from fruity_menu.adjust import AdjustMenu, BoolMenu, NumberMenu, OptionMenu
 from fruity_menu.abstract import AbstractMenu
 from fruity_menu.options import ActionButton, SubmenuButton, ValueButton
 
@@ -155,6 +160,17 @@ class Menu(AbstractMenu):
         self._options.append(val)
         return val
 
+    def add_option_button(self, title: str, value, options: List,
+                 option_labels: Optional[List]=None, on_value_set=None, on_set_args=None):
+        submenu = OptionMenu(value, options, title, self._height, self._width,
+                            option_labels=option_labels,
+                            value_set=on_value_set,
+                            value_set_args=on_set_args)
+        val = ValueButton(title, value, submenu, self._submenu_is_opening)
+        val.upmenu = self
+        self._options.append(val)
+        return val
+
     def build_displayio_group(self) -> Group:
         """Builds a `displayio.Group` of this menu and all its options and current selection."""
         self._y = 0
@@ -181,8 +197,7 @@ class Menu(AbstractMenu):
             if (i + index_offset >= len(self._options)):
                 continue
             opt = self._options[i + index_offset]
-            lbl = Label(terminalio.FONT)
-            lbl.text = opt.text
+            lbl = Label(terminalio.FONT, text=opt.text, save_text=False)
 
             if i == selected_relative_row:
                 lbl.color = OPT_HIGHLIGHT_TEXT_COLOR
@@ -190,7 +205,7 @@ class Menu(AbstractMenu):
             else:
                 lbl.color = OPT_TEXT_COLOR
                 lbl.background_color = OPT_BACK_COLOR
-            lbl.anchor_point = (0,0)
+            lbl.anchor_point = (0, 0)
             lbl.anchored_position = (self._x, self._y)
             grp.append(lbl)
 
@@ -201,8 +216,7 @@ class Menu(AbstractMenu):
 
     def get_title_label(self) -> Label:
         """Gets the Label for this menu's title and adjusts the builder's coordinates to compensate for the object"""
-        lbl = Label(terminalio.FONT)
-        lbl.text = '    ' + self._title
+        lbl = Label(terminalio.FONT, text='    ' + self._title, save_text=False)
         lbl.color = OPT_HIGHLIGHT_TEXT_COLOR
         lbl.background_color = OPT_HIGHLIGHT_BACK_COLOR
         lbl.anchored_position = (0, self._y)
@@ -222,10 +236,9 @@ class Menu(AbstractMenu):
         will also display the `Group` itself.
         """
         # if no submenu is open, then show this menu
-        print('showing', self._title)
         if self._activated_submenu is None:
             grp = self.build_displayio_group()
-            self._display.show(grp)
+            self._display.root_group = grp
             self._is_active = True
             return grp
         else:
@@ -233,7 +246,7 @@ class Menu(AbstractMenu):
             # main and submenus can show themselves, but adjustmenus have to *be* shown
             if (isinstance(self._activated_submenu, AdjustMenu)):
                 grp = self._activated_submenu.build_displayio_group()
-                self._display.show(grp)
+                self._display.root_group = grp
                 return grp
             else:
                 return self._activated_submenu.show_menu()
