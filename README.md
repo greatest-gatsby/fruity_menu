@@ -104,7 +104,7 @@ while True:
 ```
 
 ## When to render
-For the most part, Fruity Menu handles calls to render to the screen. For example, `click()` and `scroll(delta)` both ensure that the screen is rendered after navigating. You only need to invoke `show_menu()` when the screen wasn't already showing Fruity Menu and you want to begin showing it. This means you can use the whole screen for your application and then only open the menu when the user provides the necessary input, like clicking a button.
+For the most part, Fruity Menu handles calls to render to the screen. For example, `click()` and `scroll(delta)` both ensure that the screen is rendered after navigating. You only need to invoke `show_menu()` when the screen wasn't already showing Fruity Menu and you want to begin showing it. This means you can use the whole screen for your application and then only open the menu when the user provides the necessary input, like clicking a button. Additionally, you can disable auto-redraw on `scroll(delta, redraw)` by passing `False` for `redraw`.
 
 To best manage other applications using the same display, add an `ActionButton` to the top-level menu. For the callback, specify a function that will render your application to the screen. You will also need to track which application is "open" and route your inputs to the appropriate app.
 

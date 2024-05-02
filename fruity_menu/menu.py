@@ -280,10 +280,10 @@ class Menu(AbstractMenu):
             return selected.click()
             
 
-    def scroll(self, delta: int) -> int:
+    def scroll(self, delta: int, redraw: bool = False) -> int:
         """
         Update menu's selected position using the given delta and allowing circular scrolling.
-        The menu is not graphically updated.
+        By default, the menu is not graphically updated, but it can be by providing `true` as the second argument.
         This method returns the post-scroll position in the menu.
         """
         # Exec submenu if open
@@ -305,7 +305,10 @@ class Menu(AbstractMenu):
             # Else just scroll up
             else:
                 self._selection = self._selection - 1
-        #print('Scrolled to', self._selection, 'using delta', delta)
+        
+        if delta != 0 and redraw == True:
+            self.show_menu()
+
         return self._selection
     
     def _submenu_is_closing(self):
